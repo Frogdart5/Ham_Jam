@@ -13,6 +13,7 @@ class Character(Entity):
         self.inventory = []
         self.effects = []
         self.level = 1
+        self.xp = 1
 
 
 def load_cmd_sets():
