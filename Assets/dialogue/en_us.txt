@@ -1,0 +1,6 @@
+menu.selections:1)Start 2)Options 3)Exit
+menu.start:Start Game (Y/N)
+menu.exit:Are you sure you want to quit (Y/N)
+menu.lang:Please choose a Language (currently %s)
+cmd.unknown:Unknown Command
+cmd.unavailable:You can't do that right now

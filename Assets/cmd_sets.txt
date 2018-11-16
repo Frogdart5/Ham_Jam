@@ -1,0 +1,2 @@
+menu.main:start,options,exit
+menu.options:language,reset,back
