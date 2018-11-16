@@ -1,6 +1,19 @@
 # TODO:Everything
 
 
+class Entity:
+    def __init__(self, health, max_health):
+        self.health = health
+        self.max_health = max_health
+
+
+class Character(Entity):
+    def __init__(self):
+        super(Character, self).__init__()
+        self.inventory = []
+        self.effects = []
+
+
 def load_cmd_sets():
     global cmd_sets
     global cmd_sets_name
@@ -8,7 +21,7 @@ def load_cmd_sets():
     global all_cmd
     all_cmd = []
     available_cmd = []
-    # list of currently available comands
+    # list of currently available commands
     cmd_sets = []
     # List of lists containing all available commands for any given situation
     cmd_sets_name = []
