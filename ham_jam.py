@@ -12,6 +12,7 @@ class Character(Entity):
         super(Character, self).__init__()
         self.inventory = []
         self.effects = []
+        self.level = 1
 
 
 def load_cmd_sets():
