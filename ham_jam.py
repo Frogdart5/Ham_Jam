@@ -9,11 +9,17 @@ class Entity:
 
 class Character(Entity):
     def __init__(self):
-        super(Character, self).__init__()
+        super(Character, self).__init__()  # supposedly the proper way to declare a subclass
         self.inventory = []
         self.effects = []
         self.level = 1
         self.xp = 1
+
+
+class Enemy(Entity):
+    def __init__(self, strength):
+        super(Enemy, self).__init__()
+        self.strength = strength
 
 
 def load_cmd_sets():
@@ -101,12 +107,6 @@ def load_dialogue(lang="en_us"):
     return
 
 
-# functions
-def get_rooms():
-    # TODO: get rooms
-    return
-
-
 def get_items():
     item_name = []
     item_effect = []
@@ -150,6 +150,12 @@ def load_menu():
 
 def load_room():
     # TODO: Load Room
+    return
+
+
+# functions
+def get_rooms():
+    # TODO: get rooms
     return
 
 
