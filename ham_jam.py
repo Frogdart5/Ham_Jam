@@ -1,6 +1,6 @@
 # TODO:Everything
 import random
-all_cmd = {'walk':walk, 'quit':game_quit, 'start':game_start,'exit':game_exit, 'options':options}
+import sys
 
 class Entity:
     def __init__(self, health, max_health):
@@ -69,15 +69,8 @@ def cmd_interpreter():
         current_cmd = current_cmd_string.lower().rstrip().split()
         # Checks if command is a valid command and if the command is valid for current context
         if current_cmd[0] in all_cmd and current_cmd[0] in available_cmd:
-            index = 0
-            found = False
-            while index <= len(all_cmd) and not found:
-                if all_cmd[index].lower() == current_cmd[0]:
-                    found = True
-                    print("Understood Command:", current_cmd[0])
-                    all_cmd[current_cmd[0]]()
-                index += 1
-            # match and stop search
+                print("Understood Command:", current_cmd[0])
+                all_cmd[current_cmd[0]]()
         elif current_cmd[0] in all_cmd:
             print(dialogue["cmd.unavailable"])
         else:
@@ -164,17 +157,17 @@ def load_room(x, y):
     # TODO: If room does not exist create room
     return
 
-def game_exit():
+def game_exit(): # exit the game and finish the proccess
     sys.exit()
     return
-def walk(args):
-    if args.lower == dialogue['walk.north']:
+def walk(direction):
+    if direction.lower == dialogue['walk.north']:
         print("walking North")
-    elif args.lower == dialogue['walk.south']:
+    elif direction.lower == dialogue['walk.south']:
         print("walking Sorth")
-    elif args.lower == dialogue['walk.east']:
+    elif direction.lower == dialogue['walk.east']:
         print("walking East")
-    elif args.lower == dialogue['walk.west']:
+    elif direction.lower == dialogue['walk.west']:
         print("walking West")
     return
 
@@ -193,7 +186,7 @@ def options():
     print(dialogue['menu.options'])
     return
 
-
+all_cmd = {'walk':walk, 'quit':game_quit, 'start':game_start,'exit':game_exit, 'options':options}
 # initialize
 load_cmd_sets()
 load_dialogue()
