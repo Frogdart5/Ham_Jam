@@ -1,6 +1,6 @@
-# TODO:Everything
 import random
 import sys
+
 
 class Entity:
     def __init__(self, health, max_health):
@@ -66,7 +66,7 @@ def cmd_interpreter():
     quit_interpreter = False
     while not quit_interpreter:
         current_cmd_string = input(">: ")
-        if not current_cmd_string.strip() == "" :
+        if not current_cmd_string.strip() == "":
             current_cmd = current_cmd_string.lower().rstrip().split()
             # Checks if command is a valid command and if the command is valid for current context
             if current_cmd[0] in all_cmd and current_cmd[0] in available_cmd:
@@ -140,8 +140,8 @@ def load_menu():
 
 
 def create_room(x, y):
-    spawning_chance = random.randint(0,100)
-    if spawning_chance >= 75: # Spawns item if chance over 75%
+    spawning_chance = random.randint(0, 100)
+    if spawning_chance >= 75:  # Spawns item if chance over 75%
         print("spawned item")
         item_spawn_chance = random.randint(0, 100)
         if item_spawn_chance <= 75:
@@ -152,7 +152,7 @@ def create_room(x, y):
             print("rare")
         elif item_spawn_chance <= 100:
             print("legendary")
-    elif spawning_chance >= 50: # spawn enemy
+    elif spawning_chance >= 50:  # spawn enemy
         print("spawned enemy")
         enemy_spawn_chance = random.randint(0, 100)
         if enemy_spawn_chance <= 75:
@@ -172,15 +172,18 @@ def create_room(x, y):
 def load_room(x, y):
     room_exists = False
     if not room_exists:
-        create_room(x,y)
+        create_room(x, y)
     # TODO: check if room exists
     # TODO: If room does exist load it from file
     # TODO: If room does not exist create room
     return
 
-def game_exit(): # exit the game and finish the proccess
+
+def game_exit():  # exit the game and finish the process
     sys.exit()
     return
+
+
 def walk(direction):
     global x_pos
     global y_pos
@@ -202,15 +205,15 @@ def walk(direction):
         y_pos += -1
         moved = True
     if moved:
-        load_room(x_pos,y_pos)
-        print("X:",x_pos,"Y:",y_pos)
+        load_room(x_pos, y_pos)
+        print("X:", x_pos, "Y:", y_pos)
     else:
         print("invalid direction")
     return
 
 
 def game_quit():
-    #save game
+    # save game
     load_menu()
 
     return
@@ -223,17 +226,19 @@ def game_start():
     x_pos = 0
     y_pos = 0
 
-    print("startting game")
+    print("starting game")
     set_avail_cmd("game.main")  # Sets available commands to those used during gameplay
     # load first room
     # load room
     return
 
+
 def options():
     print(dialogue['menu.options'])
     return
 
-all_cmd = {'walk':walk, 'quit':game_quit, 'start':game_start,'exit':game_exit, 'options':options}
+
+all_cmd = {'walk': walk, 'quit': game_quit, 'start': game_start, 'exit': game_exit, 'options': options}
 # initialize
 load_cmd_sets()
 load_dialogue()
