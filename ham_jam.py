@@ -1,5 +1,6 @@
 # TODO:Everything
-
+import random
+all_cmd = {'walk':walk, 'quit':game_quit, 'start':game_start,'exit':game_exit, 'options':options}
 
 class Entity:
     def __init__(self, health, max_health):
@@ -26,8 +27,6 @@ def load_cmd_sets():
     global cmd_sets
     global cmd_sets_name
     global available_cmd
-    global all_cmd
-    all_cmd = []
     available_cmd = []
     # list of currently available commands
     cmd_sets = []
@@ -41,12 +40,7 @@ def load_cmd_sets():
             cmd_sets_full_str = line.split(":")
             cmd_sets_name.append(cmd_sets_full_str[0])
             cmd_sets.append(cmd_sets_full_str[1].split(","))
-            # add all new commands to all_cmd list
-            for cmd in cmd_sets_full_str[1].split(","):
-                if cmd not in all_cmd:
-                    all_cmd.append(cmd)
     cmd_sets_file.close()
-    print(cmd_sets)
 
 
 def set_avail_cmd(cmd_set_name):
@@ -69,21 +63,22 @@ def set_avail_cmd(cmd_set_name):
 def cmd_interpreter():
     # TODO: implement command matching
     global all_cmd
-    block_input = False
-    while not block_input:
-        current_cmd = input(">: ")
-        if current_cmd.lower() in all_cmd and current_cmd.lower() in available_cmd:
+    quit_interpreter = False
+    while not quit_interpreter:
+        current_cmd_string = input(">: ")
+        current_cmd = current_cmd_string.lower().rstrip().split()
+        # Checks if command is a valid command and if the command is valid for current context
+        if current_cmd[0] in all_cmd and current_cmd[0] in available_cmd:
             index = 0
             found = False
             while index <= len(all_cmd) and not found:
-                if all_cmd[index].lower() == current_cmd.lower():
+                if all_cmd[index].lower() == current_cmd[0]:
                     found = True
-                    print("Understood:", current_cmd)
-                    # TODO check if command is currently available
-                    # TODO Command name resolution
+                    print("Understood Command:", current_cmd[0])
+                    all_cmd[current_cmd[0]]()
                 index += 1
             # match and stop search
-        elif current_cmd in all_cmd:
+        elif current_cmd[0] in all_cmd:
             print(dialogue["cmd.unavailable"])
         else:
             print(dialogue["cmd.unknown"])
@@ -137,7 +132,6 @@ def load_save(save_num):  # load items to correct locations in game
 
 
 def load_menu():
-    # TODO: load menu
     # loads and prints menu art
     menu_art_file = open("Assets/Art/Menu/logo.txt", "r")
     menu_art = menu_art_file.read()
@@ -148,19 +142,55 @@ def load_menu():
     return
 
 
-def load_room():
-    # TODO: Load Room
+def create_room(x, y):
+    enemy_spawn_chance = random.randint(0, 100)  # If value above 90 spawn enemy in room
+    if enemy_spawn_chance >= 90:
+        print("spawned enemy")
+    # spawn enemy
+
+    # TODO: Determine if enemy should spawn in room
+    # TODO: Determine if item should spawn in room
+    item_spawn_chance = random.randint(0, 100)
+    if item_spawn_chance >= 50: # spawn an item if chance greater than 50
+        print("spawned item")
+
+    # TODO: save rooms to save file for later loading
     return
 
 
-# functions
-def get_rooms():
-    # TODO: get rooms
+def load_room(x, y):
+    # TODO: check if room exists
+    # TODO: If room does exist load it from file
+    # TODO: If room does not exist create room
+    return
+
+def game_exit():
+    sys.exit()
+    return
+def walk(args):
+    if args.lower == dialogue['walk.north']:
+        print("walking North")
+    elif args.lower == dialogue['walk.south']:
+        print("walking Sorth")
+    elif args.lower == dialogue['walk.east']:
+        print("walking East")
+    elif args.lower == dialogue['walk.west']:
+        print("walking West")
     return
 
 
-def load_assets():
-    # TODO: Load assets
+def game_quit():
+
+    return
+
+
+def game_start():
+    # TODO: start game
+    print("startting game")
+    return
+
+def options():
+    print(dialogue['menu.options'])
     return
 
 
