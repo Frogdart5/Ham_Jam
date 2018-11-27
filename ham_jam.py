@@ -66,15 +66,19 @@ def cmd_interpreter():
     quit_interpreter = False
     while not quit_interpreter:
         current_cmd_string = input(">: ")
-        current_cmd = current_cmd_string.lower().rstrip().split()
-        # Checks if command is a valid command and if the command is valid for current context
-        if current_cmd[0] in all_cmd and current_cmd[0] in available_cmd:
-                print("Understood Command:", current_cmd[0])
-                all_cmd[current_cmd[0]]()
-        elif current_cmd[0] in all_cmd:
-            print(dialogue["cmd.unavailable"])
-        else:
-            print(dialogue["cmd.unknown"])
+        if not current_cmd_string.strip() == "" :
+            current_cmd = current_cmd_string.lower().rstrip().split()
+            # Checks if command is a valid command and if the command is valid for current context
+            if current_cmd[0] in all_cmd and current_cmd[0] in available_cmd:
+                # print("Understood Command:", current_cmd[0])
+                if len(current_cmd) > 1:
+                    all_cmd[current_cmd[0]](current_cmd[1])
+                else:
+                    all_cmd[current_cmd[0]]()
+            elif current_cmd[0] in all_cmd:
+                print(dialogue["cmd.unavailable"])
+            else:
+                print(dialogue["cmd.unknown"])
     return
 
 
@@ -90,7 +94,7 @@ def load_dialogue(lang="en_us"):
     for line in dialogue_lines:
         if len(line.strip(", ")) > 0:
             dialogue_str = line.split(":")
-            dialogue[dialogue_str[0]] = dialogue_str[1]
+            dialogue[dialogue_str[0]] = str(dialogue_str[1])
     dialogue_file.close()
     return
 
@@ -136,22 +140,39 @@ def load_menu():
 
 
 def create_room(x, y):
-    enemy_spawn_chance = random.randint(0, 100)  # If value above 90 spawn enemy in room
-    if enemy_spawn_chance >= 90:
-        print("spawned enemy")
-    # spawn enemy
-
-    # TODO: Determine if enemy should spawn in room
-    # TODO: Determine if item should spawn in room
-    item_spawn_chance = random.randint(0, 100)
-    if item_spawn_chance >= 50: # spawn an item if chance greater than 50
+    spawning_chance = random.randint(0,100)
+    if spawning_chance >= 75: # Spawns item if chance over 75%
         print("spawned item")
-
+        item_spawn_chance = random.randint(0, 100)
+        if item_spawn_chance <= 75:
+            print("common")
+        elif item_spawn_chance <= 90:
+            print("uncommon")
+        elif item_spawn_chance <= 99:
+            print("rare")
+        elif item_spawn_chance <= 100:
+            print("legendary")
+    elif spawning_chance >= 50: # spawn enemy
+        print("spawned enemy")
+        enemy_spawn_chance = random.randint(0, 100)
+        if enemy_spawn_chance <= 75:
+            print("common")
+        elif enemy_spawn_chance <= 90:
+            print("uncommon")
+        elif enemy_spawn_chance <= 99:
+            print("rare")
+        elif enemy_spawn_chance <= 100:
+            print("legendary")
+    else:
+        print("nothing spawned")
     # TODO: save rooms to save file for later loading
     return
 
 
 def load_room(x, y):
+    room_exists = False
+    if not room_exists:
+        create_room(x,y)
     # TODO: check if room exists
     # TODO: If room does exist load it from file
     # TODO: If room does not exist create room
@@ -161,25 +182,51 @@ def game_exit(): # exit the game and finish the proccess
     sys.exit()
     return
 def walk(direction):
-    if direction.lower == dialogue['walk.north']:
+    global x_pos
+    global y_pos
+    moved = False
+    if direction.lower() == dialogue['walk.north']:
         print("walking North")
-    elif direction.lower == dialogue['walk.south']:
+        x_pos += 1
+        moved = True
+    elif direction.lower() == dialogue['walk.south']:
         print("walking Sorth")
-    elif direction.lower == dialogue['walk.east']:
+        x_pos += -1
+        moved = True
+    elif direction.lower() == dialogue['walk.east']:
         print("walking East")
-    elif direction.lower == dialogue['walk.west']:
+        y_pos += 1
+        moved = True
+    elif direction.lower() == dialogue['walk.west']:
         print("walking West")
+        y_pos += -1
+        moved = True
+    if moved:
+        load_room(x_pos,y_pos)
+        print("X:",x_pos,"Y:",y_pos)
+    else:
+        print("invalid direction")
     return
 
 
 def game_quit():
+    #save game
+    load_menu()
 
     return
 
 
 def game_start():
     # TODO: start game
+    global x_pos
+    global y_pos
+    x_pos = 0
+    y_pos = 0
+
     print("startting game")
+    set_avail_cmd("game.main")  # Sets available commands to those used during gameplay
+    # load first room
+    # load room
     return
 
 def options():
