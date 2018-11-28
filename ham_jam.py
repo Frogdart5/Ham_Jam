@@ -1,5 +1,4 @@
 import random
-import sys
 import uuid
 
 
@@ -42,7 +41,7 @@ def set_avail_cmd(cmd_set_name):
 
 def cmd_interpreter():
     global all_cmd
-    quit_interpreter = False
+    global quit_interpreter
     while not quit_interpreter:
         current_cmd_string = input(">: ")
         if not current_cmd_string.strip() == "":
@@ -190,7 +189,8 @@ def load_room(x, y):
 
 
 def game_exit():  # exit the game and finish the process
-    sys.exit()
+    global quit_interpreter
+    quit_interpreter = True
     return
 
 
@@ -261,4 +261,5 @@ load_cmd_sets()
 load_dialogue()
 # ready Load menu
 load_menu()  # Loads main menu
+quit_interpreter = False
 cmd_interpreter()
