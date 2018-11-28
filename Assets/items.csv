@@ -1,2 +1,2 @@
-apple, heal, 3
-sword, attack, 5
+apple, heal, 3, item.apple, common
+sword, attack, 5, item.sword, common

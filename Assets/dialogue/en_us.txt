@@ -1,4 +1,4 @@
-menu.selections:1)Start 2)Options 3)Exit
+menu.selections: 1)Start 2)Options 3)Exit
 menu.start:Start Game (Y/N)
 menu.exit:Are you sure you want to quit (Y/N)
 menu.options:Options 1)Language
@@ -9,3 +9,5 @@ walk.north:north
 walk.south:south
 walk.east:east
 walk.west:west
+item.apple:apple
+item.sword:sword

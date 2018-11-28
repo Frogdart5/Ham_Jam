@@ -1,26 +1,6 @@
 import random
 import sys
-
-
-class Entity:
-    def __init__(self, health, max_health):
-        self.health = health
-        self.max_health = max_health
-
-
-class Character(Entity):
-    def __init__(self):
-        super(Character, self).__init__()  # supposedly the proper way to declare a subclass
-        self.inventory = []
-        self.effects = []
-        self.level = 1
-        self.xp = 1
-
-
-class Enemy(Entity):
-    def __init__(self, strength):
-        super(Enemy, self).__init__()
-        self.strength = strength
+import uuid
 
 
 def load_cmd_sets():
@@ -61,7 +41,6 @@ def set_avail_cmd(cmd_set_name):
 
 
 def cmd_interpreter():
-    # TODO: implement command matching
     global all_cmd
     quit_interpreter = False
     while not quit_interpreter:
@@ -114,10 +93,10 @@ def get_items():
     return
 
 
-def load_save(save_num):  # load items to correct locations in game
+def load_save(save_num=0):  # load items to correct locations in game
     global save_data
     save_data = {}
-    save_file = open("Saves/save" + save_num + ".txt", "r")
+    save_file = open("Saves/save" + str(save_num) + ".txt", "r")
     save_lines = save_file.read().split("\n")
     for line in save_lines:
         if len(line.strip(", ")) > 0:
@@ -140,42 +119,73 @@ def load_menu():
 
 
 def create_room(x, y):
+    global world_enemies
+    global world_rooms
     spawning_chance = random.randint(0, 100)
     if spawning_chance >= 75:  # Spawns item if chance over 75%
-        print("spawned item")
+        print("spawned item:", end=' ')
+        spawned_entity = 1
+        entity_uuid = uuid.uuid4()
         item_spawn_chance = random.randint(0, 100)
         if item_spawn_chance <= 75:
             print("common")
+            item_type = 'common'
         elif item_spawn_chance <= 90:
             print("uncommon")
+            item_type = 'uncommon'
         elif item_spawn_chance <= 99:
             print("rare")
+            item_type = 'rare'
         elif item_spawn_chance <= 100:
             print("legendary")
+            item_type = 'legendary'
+        world_items[entity_uuid] = [item_type]
     elif spawning_chance >= 50:  # spawn enemy
-        print("spawned enemy")
+        print("spawned enemy:", end=' ')
+        spawned_entity = 2
+        entity_uuid = uuid.uuid4()
         enemy_spawn_chance = random.randint(0, 100)
         if enemy_spawn_chance <= 75:
             print("common")
+            enemy_type = 'common'
+            health = 10
+            attack = 10
         elif enemy_spawn_chance <= 90:
             print("uncommon")
+            enemy_type = 'uncommon'
+            health = 10
+            attack = 10
         elif enemy_spawn_chance <= 99:
             print("rare")
+            enemy_type = 'rare'
+            health = 10
+            attack = 10
         elif enemy_spawn_chance <= 100:
             print("legendary")
+            enemy_type = 'legendary'
+            health = 10
+            attack = 10
+        world_enemies[entity_uuid] = [enemy_type, health, attack]
     else:
         print("nothing spawned")
-    # TODO: save rooms to save file for later loading
+        spawned_entity = 0
+        entity_uuid = ''
+    if x not in rooms:
+        rooms[x] = {}
+    rooms[x][y] = [spawned_entity, entity_uuid]  # nothing = 0, item = 1, enemy = 2
     return
 
 
 def load_room(x, y):
     room_exists = False
+    if x in rooms:
+        if y in rooms[x]:
+            room_exists = True
     if not room_exists:
         create_room(x, y)
-    # TODO: check if room exists
-    # TODO: If room does exist load it from file
-    # TODO: If room does not exist create room
+    else:
+        print("Loading room")
+        # TODO: Load Room
     return
 
 
@@ -223,8 +233,15 @@ def game_start():
     # TODO: start game
     global x_pos
     global y_pos
+    global rooms
+    global world_enemies
+    global world_items
+    world_items = {}
     x_pos = 0
     y_pos = 0
+    rooms = {0: {0: [0, '']}}
+    world_enemies = {}
+    char_health = 20
 
     print("starting game")
     set_avail_cmd("game.main")  # Sets available commands to those used during gameplay
