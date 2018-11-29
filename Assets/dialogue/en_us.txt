@@ -21,12 +21,21 @@ walk.unavailable:You Can't go that way
 walk.empty:The room is empty
 walk.occupied:There is a(n) %s in the room
 inventory.title:Inventory
+pickup.noNearby:There are no items around
+pickup.noItemNearby:That item is not nearby
+pickup.success:You picked up the %s
+consume.success:You ate the %s and recovered %d HP
+consume.unknown:That item doesn't exist
+consume.unavailable:You don't have that item
+consume.invalid:You can't eat that
+consume.noArgs:What item?
+consume.hp:Your health is now %dHP
 item.apple:apple
 item.sword:sword
-enemy.common:Common
-enemy.uncommon:Uncommon
-enemy.rare:Rare
-enemy.legendary:Legendary
+enemy.common:Common Enemy
+enemy.uncommon:Uncommon Enemy
+enemy.rare:Rare Enemy
+enemy.legendary:Legendary Enemy
 debug.optionsEnabled:One or more debug options are enabled
 debug.start:Starting Game...
 debug.createRoom:Creating Room...
@@ -37,3 +46,4 @@ debug.attack:attacked with %d strength. %s's health is now %d.
 debug.enemyAttack:%s attacking with %d strength
 debug.health:Player health now %d
 debug.immortal:Immortality enabled no damage taken
+debug.consume:Consuming...

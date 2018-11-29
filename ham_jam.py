@@ -79,7 +79,7 @@ def load_dialogue(lang="en_us"):
 
 def get_items():
     global all_weapons
-    global weapon_lookup  # dictionary with translated names as key. used to find internal name
+    global item_lookup  # dictionary with translated names as key. used to find internal name
     global item_name
     global item_effect
     global item_strength
@@ -95,9 +95,9 @@ def get_items():
             item_strength.append(item_list[2])
             item_display_key.append(item_list[3])
             item_rarity.append(item_list[4])
+            item_lookup[dialogue[item_list[3]]] = item_list[3]
             if item_list[1] == 'weapon' and item_list[3] not in all_weapons:
-                all_weapons.append(item_list[3])
-                weapon_lookup[dialogue[item_list[3]]] = item_list[3]
+                all_weapons.add(item_list[3])
     return
 
 
@@ -129,7 +129,8 @@ def load_menu():
 def create_room(x, y):
     global world_enemies
     spawning_chance = random.randint(0, 100)
-    print(dialogue['debug.createRoom'])
+    if debug_text:
+        print(dialogue['debug.createRoom'])
     if spawning_chance >= 75:  # Spawns item if chance over 75%
         print("spawned item:", end=' ')
         spawned_entity = 1
@@ -168,10 +169,12 @@ def create_room(x, y):
             enemy_type = 'enemy.common'
             health = 10
             enemy_attack = 2
-        print(dialogue['debug.spawnedEnemy'] % dialogue[enemy_type])
+        if debug_text:
+            print(dialogue['debug.spawnedEnemy'] % dialogue[enemy_type])
         world_enemies[entity_uuid] = [enemy_type, health, enemy_attack]
     else:
-        print(dialogue['debug.noSpawn'])
+        if debug_text:
+            print(dialogue['debug.noSpawn'])
         spawned_entity = 0
         entity_uuid = ''
     if x not in rooms:
@@ -187,8 +190,8 @@ def load_room(x, y):
             room_exists = True
     if not room_exists:
         create_room(x, y)
-
-    print(dialogue['debug.loadRoom'])
+    if debug_text:
+        print(dialogue['debug.loadRoom'])
     if rooms[x][y][0] == 0:
         print(dialogue['walk.empty'])
     else:
@@ -226,7 +229,8 @@ def walk(direction=''):
     if moved:
         print(dialogue['walk.walking'] % direction.title())
         load_room(x_pos, y_pos)
-        print("X: %d Y: %d" % (x_pos, y_pos))
+        if debug_text:
+            print("X: %d Y: %d" % (x_pos, y_pos))
     elif direction == '':
         print(dialogue['walk.noArgs'])
     else:
@@ -244,7 +248,8 @@ def game_start():
     # TODO: Load save file for game
     if debug_immortal:
         print(dialogue['debug.optionsEnabled'])
-    print(dialogue['debug.start'])
+    if debug_text:
+        print(dialogue['debug.start'])
     set_avail_cmd("game.main")  # Sets available commands to those used during gameplay
     load_room(x_pos, y_pos)
     return
@@ -260,7 +265,68 @@ def inventory():
     global char_inventory
     print(dialogue['inventory.title'], end=':\n')
     for entry in char_inventory:
-        print(dialogue[entry])
+        print(dialogue[entry], "x%d" % char_inventory[entry])
+    return
+
+
+def pickup(item_input=''):
+    global char_inventory
+    global item_lookup
+    if rooms[x_pos][y_pos][0] == 1: # check if room has item
+        item_uuid = rooms[x_pos][y_pos][1]
+        room_item = world_items[item_uuid]
+        if item_input in item_lookup or item_input == '':  # find internal name
+            if item_input in item_lookup:
+                item = item_lookup[item_input]
+            else:  # assume item in room
+                item = room_item
+            if item == room_item:
+                if item not in char_inventory:  # create entry for item if it doesn't exist
+                    char_inventory[item] = 0
+                print(dialogue['pickup.success'] % dialogue[item])
+                char_inventory[item] += 1
+            else:
+                print(dialogue['pickup.noItemNearby'])
+    else:
+        print(dialogue['pickup.noNearby'])
+    return
+
+
+def consume(item_input=''):
+    global item_display_key
+    global item_strength
+    global item_effect
+    global char_health
+    global char_inventory
+    if item_input in item_lookup:
+        item = item_lookup[item_input]
+        if item in char_inventory:
+            if debug_text:
+                print(dialogue['debug.consume'])
+            index = 0
+            found = False
+            while index < len(item_display_key) and not found:
+                if item == item_display_key[index]:
+                    found = True
+                else:
+                    index += 1
+            if found and 'heal' == item_effect[index]:
+                char_health += int(item_strength[index])
+                print(dialogue['consume.success'] % (dialogue[item], int(item_strength[index])))
+                print(dialogue['consume.hp'] % char_health)
+                char_inventory[item] -= 1  # Remove one item from inventory on use
+                if char_inventory[item] == 0:
+                    char_inventory.pop(item)
+            elif found:
+                print(dialogue['consume.invalid'])  # found item but item can't be eaten
+            # get effects
+            # consume
+        else:
+            print(dialogue['consume.unavailable'])  # item not in inventory
+    elif item_input == '':
+        print(dialogue['consume.noArgs'])
+    else:
+        print(dialogue['consume.unknown'])
     return
 
 
@@ -269,15 +335,15 @@ def attack(weapon_input=''):
     global x_pos
     global y_pos
     global all_weapons
-    global weapon_lookup
+    global item_lookup
     global char_inventory
     global world_enemies
     global char_health
     global char_defense
     global debug_immortal
     if rooms[x_pos][y_pos][0] == 2:  # Check if enemy in room
-        if weapon_input in weapon_lookup:  # search for internal name of weapon
-            weapon = weapon_lookup[weapon_input]
+        if weapon_input in item_lookup:  # search for internal name of weapon
+            weapon = item_lookup[weapon_input]
         elif weapon_input == '':
             weapon = 'attack.hand'
         else:
@@ -332,10 +398,12 @@ all_cmd = {'walk': walk,
            'exit': game_exit,
            'options': options,
            'attack': attack,
-           'inventory': inventory}
+           'inventory': inventory,
+           'consume': consume,
+           'pickup': pickup}
 # initialize
-all_weapons = []
-weapon_lookup = {}
+all_weapons = set()
+item_lookup = {}
 item_name = []
 item_effect = []
 item_strength = []
@@ -352,9 +420,10 @@ x_pos = 0
 y_pos = 0
 rooms = {0: {0: [0, '']}}
 world_enemies = {}
-char_inventory = {'item.sword': 1}
+char_inventory = {'item.sword': 1, 'item.apple': 3}  # internal item name, quantity
 char_health = 20
 char_defense = 1
-debug_immortal = True
+debug_immortal = False  # Debug option to prevent damage
+debug_text = False  # show debug Text
 quit_interpreter = False
 cmd_interpreter()
