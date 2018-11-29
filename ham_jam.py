@@ -85,6 +85,7 @@ def get_items():
     global item_strength
     global item_display_key
     global item_rarity
+    global item_gen
     items_file = open("Assets/items.csv", "r")
     items_str = items_file.read().split("\n")
     for line in items_str:
@@ -98,6 +99,9 @@ def get_items():
             item_lookup[dialogue[item_list[3]]] = item_list[3]
             if item_list[1] == 'weapon' and item_list[3] not in all_weapons:
                 all_weapons.add(item_list[3])
+            if item_list[4] not in item_gen:
+                item_gen[item_list[4]] = []
+            item_gen[item_list[4]].append(item_list[3])
     return
 
 
@@ -128,44 +132,41 @@ def load_menu():
 
 def create_room(x, y):
     global world_enemies
-    spawning_chance = random.randint(0, 100)
+    spawning_chance = random.randint(75, 100) # TODO: restore natural spawn rate
     if debug_text:
         print(dialogue['debug.createRoom'])
     if spawning_chance >= 75:  # Spawns item if chance over 75%
-        print("spawned item:", end=' ')
         spawned_entity = 1
         entity_uuid = uuid.uuid4()
-        item_spawn_chance = random.randint(0, 100)
-        if item_spawn_chance == 100:
-            print("legendary")
-            item_type = 'legendary'
-        elif item_spawn_chance >= 99:
-            print("rare")
-            item_type = 'rare'
-        elif item_spawn_chance >= 90:
-            print("uncommon")
-            item_type = 'uncommon'
-        else:
-            print("common")
-            item_type = 'common'
+        item_spawn_chance = random.randint(0, 80) # TODO: restore natural spawn rate
+        if item_spawn_chance == 100:  # legendary
+            item_type = random.choice(item_gen['legendary'])
+        elif item_spawn_chance >= 99:  # rare
+            item_type = random.choice(item_gen['rare'])
+        elif item_spawn_chance >= 90:  # uncommon
+            item_type = random.choice(item_gen['uncommon'])
+        else:  # common
+            item_type = random.choice(item_gen['common'])
+        if debug_text:
+            print(dialogue['debug.spawnedItem'] % dialogue[item_type])
         world_items[entity_uuid] = [item_type]
     elif spawning_chance >= 50:  # spawn enemy
         spawned_entity = 2
         entity_uuid = uuid.uuid4()
         enemy_spawn_chance = random.randint(0, 100)
-        if enemy_spawn_chance == 100:
+        if enemy_spawn_chance == 100:  # legendary
             enemy_type = 'enemy.legendary'
             health = 10
             enemy_attack = 10
-        elif enemy_spawn_chance >= 99:
+        elif enemy_spawn_chance >= 99:  # rare
             enemy_type = 'enemy.rare'
             health = 10
             enemy_attack = 5
-        elif enemy_spawn_chance >= 90:
+        elif enemy_spawn_chance >= 90:  # uncommon
             enemy_type = 'enemy.uncommon'
             health = 10
             enemy_attack = 3
-        else:
+        else:  # common
             enemy_type = 'enemy.common'
             health = 10
             enemy_attack = 2
@@ -199,7 +200,7 @@ def load_room(x, y):
         if rooms[x][y][0] == 2:
             entity_name = dialogue[world_enemies[entity_uuid][0]]  # Gets name of entity
         else:
-            entity_name = entity_uuid
+            entity_name = dialogue[world_items[entity_uuid][0]]
         print(dialogue['walk.occupied'] % entity_name)
     return
 
@@ -272,19 +273,19 @@ def inventory():
 def pickup(item_input=''):
     global char_inventory
     global item_lookup
-    if rooms[x_pos][y_pos][0] == 1: # check if room has item
+    if rooms[x_pos][y_pos][0] == 1:  # check if room has item
         item_uuid = rooms[x_pos][y_pos][1]
-        room_item = world_items[item_uuid]
+        room_item = world_items[item_uuid][0]
         if item_input in item_lookup or item_input == '':  # find internal name
             if item_input in item_lookup:
-                item = item_lookup[item_input]
+                pickup_item = item_lookup[item_input]
             else:  # assume item in room
-                item = room_item
-            if item == room_item:
-                if item not in char_inventory:  # create entry for item if it doesn't exist
-                    char_inventory[item] = 0
-                print(dialogue['pickup.success'] % dialogue[item])
-                char_inventory[item] += 1
+                pickup_item = room_item
+            if pickup_item == room_item:
+                if pickup_item not in char_inventory:  # create entry for item if it doesn't exist
+                    char_inventory[pickup_item] = 0
+                print(dialogue['pickup.success'] % dialogue[pickup_item])
+                char_inventory[pickup_item] += 1
             else:
                 print(dialogue['pickup.noItemNearby'])
     else:
@@ -409,6 +410,7 @@ item_effect = []
 item_strength = []
 item_display_key = []
 item_rarity = []
+item_gen = {}
 load_cmd_sets()
 load_dialogue()
 get_items()
