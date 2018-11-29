@@ -78,11 +78,13 @@ def load_dialogue(lang="en_us"):
 
 
 def get_items():
-    item_name = []
-    item_effect = []
-    item_strength = []
-    item_display_key = []
-    item_rarity = []
+    global all_weapons
+    global weapon_lookup  # dictionary with translated names as key. used to find internal name
+    global item_name
+    global item_effect
+    global item_strength
+    global item_display_key
+    global item_rarity
     items_file = open("Assets/items.csv", "r")
     items_str = items_file.read().split("\n")
     for line in items_str:
@@ -93,6 +95,9 @@ def get_items():
             item_strength.append(item_list[2])
             item_display_key.append(item_list[3])
             item_rarity.append(item_list[4])
+            if item_list[1] == 'weapon' and item_list[3] not in all_weapons:
+                all_weapons.append(item_list[3])
+                weapon_lookup[dialogue[item_list[3]]] = item_list[3]
     return
 
 
@@ -144,30 +149,26 @@ def create_room(x, y):
             item_type = 'common'
         world_items[entity_uuid] = [item_type]
     elif spawning_chance >= 50:  # spawn enemy
-        print("spawned enemy:", end=' ')
         spawned_entity = 2
         entity_uuid = uuid.uuid4()
         enemy_spawn_chance = random.randint(0, 100)
         if enemy_spawn_chance == 100:
-            print("legendary")
-            enemy_type = 'legendary'
+            enemy_type = 'enemy.legendary'
             health = 10
             enemy_attack = 10
         elif enemy_spawn_chance >= 99:
-            print("rare")
-            enemy_type = 'rare'
+            enemy_type = 'enemy.rare'
             health = 10
             enemy_attack = 5
         elif enemy_spawn_chance >= 90:
-            print("uncommon")
-            enemy_type = 'uncommon'
+            enemy_type = 'enemy.uncommon'
             health = 10
             enemy_attack = 3
         else:
-            print("common")
-            enemy_type = 'common'
+            enemy_type = 'enemy.common'
             health = 10
             enemy_attack = 2
+        print(dialogue['debug.spawnedEnemy'] % dialogue[enemy_type])
         world_enemies[entity_uuid] = [enemy_type, health, enemy_attack]
     else:
         print(dialogue['debug.noSpawn'])
@@ -192,7 +193,10 @@ def load_room(x, y):
         print(dialogue['walk.empty'])
     else:
         entity_uuid = rooms[x][y][1]
-        entity_name = entity_uuid  # TODO: find name of entity
+        if rooms[x][y][0] == 2:
+            entity_name = dialogue[world_enemies[entity_uuid][0]]  # Gets name of entity
+        else:
+            entity_name = entity_uuid
         print(dialogue['walk.occupied'] % entity_name)
     return
 
@@ -252,26 +256,50 @@ def options():
     return
 
 
-def attack(weapon="hand"):
+def inventory():
+    global char_inventory
+    print(dialogue['inventory.title'], end=':\n')
+    for entry in char_inventory:
+        print(dialogue[entry])
+    return
+
+
+def attack(weapon_input=''):
     global rooms
     global x_pos
     global y_pos
-    global inventory
+    global all_weapons
+    global weapon_lookup
+    global char_inventory
     global world_enemies
     global char_health
     global char_defense
     global debug_immortal
-    if rooms[x_pos][y_pos][0] == 2:
-        if weapon in inventory or weapon == 'hand':
-            print("attacking with %s" % weapon)
+    if rooms[x_pos][y_pos][0] == 2:  # Check if enemy in room
+        if weapon_input in weapon_lookup:  # search for internal name of weapon
+            weapon = weapon_lookup[weapon_input]
+        elif weapon_input == '':
+            weapon = 'attack.hand'
+        else:
+            weapon = ''
+        if (weapon in char_inventory and weapon in all_weapons) or weapon == 'attack.hand':
+            weapon_name = weapon_input
+            print("attacking with %s" % weapon_name)
             enemy_uuid = rooms[x_pos][y_pos][1]
             enemy_health = world_enemies[enemy_uuid][1]
             enemy_strength = world_enemies[enemy_uuid][2]
-            enemy_name = enemy_uuid
-            if weapon == 'hand':
-                weapon_strength = 1  # TODO: get weapon strength
-            else:
-                weapon_strength = 5
+            enemy_name = dialogue[world_enemies[enemy_uuid][0]]
+            if weapon == 'attack.hand':  # Use hand
+                weapon_strength = 1
+            else:  # Lookup weapon strength
+                found = False
+                index = 0
+                while index < len(item_display_key) and not found:
+                    if weapon == item_display_key[index]:
+                        found = True
+                    else:
+                        index += 1
+                weapon_strength = int(item_strength[index]) 
             enemy_health -= weapon_strength
             world_enemies[enemy_uuid][1] = enemy_health
             print(dialogue['debug.attack'] % (weapon_strength, enemy_name, enemy_health))
@@ -284,9 +312,13 @@ def attack(weapon="hand"):
                 if not debug_immortal:
                     char_health -= (enemy_strength - char_defense)
                     print(dialogue['debug.health'] % char_health)
+                    if char_health <= 0:
+                        print(dialogue['debug.death'])
+                        # TODO: handle death situations
                 else:
                     print(dialogue['debug.immortal'])
-
+        elif weapon_input in char_inventory:  # if item not a weapon but is a valid item in the player inventory
+            print(dialogue['attack.invalidWeapon'])
         else:
             print(dialogue['attack.noWeapon'] % weapon)
     else:
@@ -299,10 +331,19 @@ all_cmd = {'walk': walk,
            'start': game_start,
            'exit': game_exit,
            'options': options,
-           'attack': attack}
+           'attack': attack,
+           'inventory': inventory}
 # initialize
+all_weapons = []
+weapon_lookup = {}
+item_name = []
+item_effect = []
+item_strength = []
+item_display_key = []
+item_rarity = []
 load_cmd_sets()
 load_dialogue()
+get_items()
 # ready Load menu
 load_menu()  # Loads main menu
 # sets initial variable values
@@ -311,7 +352,7 @@ x_pos = 0
 y_pos = 0
 rooms = {0: {0: [0, '']}}
 world_enemies = {}
-inventory = {'sword': 1}
+char_inventory = {'item.sword': 1}
 char_health = 20
 char_defense = 1
 debug_immortal = True

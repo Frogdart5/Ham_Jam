@@ -7,6 +7,8 @@ cmd.unknown:Unknown Command
 cmd.unavailable:You can't do that right now
 attack.noTarget:There are no enemies nearby
 attack.noWeapon:You don't have the %s
+attack.invalidWeapon:You can't attack with that
+attack.weaponHand:Hand
 attack.kill:%s was killed
 walk.north:north
 walk.south:south
@@ -18,14 +20,20 @@ walk.noArgs:Need a direction
 walk.unavailable:You Can't go that way
 walk.empty:The room is empty
 walk.occupied:There is a(n) %s in the room
+inventory.title:Inventory
 item.apple:apple
 item.sword:sword
-debug.optionsEnabled:One or more debug options enabled
+enemy.common:Common
+enemy.uncommon:Uncommon
+enemy.rare:Rare
+enemy.legendary:Legendary
+debug.optionsEnabled:One or more debug options are enabled
 debug.start:Starting Game...
 debug.createRoom:Creating Room...
 debug.loadRoom:Loading Room...
+debug.spawnedEnemy:Spawned Enemy named %s
 debug.noSpawn:Nothing Spawned
-debug.attack:attacked with %d strength. %s health now %d.
+debug.attack:attacked with %d strength. %s's health is now %d.
 debug.enemyAttack:%s attacking with %d strength
 debug.health:Player health now %d
 debug.immortal:Immortality enabled no damage taken
