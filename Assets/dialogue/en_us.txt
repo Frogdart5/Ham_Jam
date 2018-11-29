@@ -5,9 +5,27 @@ menu.options:Options 1)Language
 menu.lang:Please choose a Language (currently %s)
 cmd.unknown:Unknown Command
 cmd.unavailable:You can't do that right now
+attack.noTarget:There are no enemies nearby
+attack.noWeapon:You don't have the %s
+attack.kill:%s was killed
 walk.north:north
 walk.south:south
 walk.east:east
 walk.west:west
+walk.walking:Walking %s
+walk.unknown:Invalid direction
+walk.noArgs:Need a direction
+walk.unavailable:You Can't go that way
+walk.empty:The room is empty
+walk.occupied:There is a(n) %s in the room
 item.apple:apple
 item.sword:sword
+debug.optionsEnabled:One or more debug options enabled
+debug.start:Starting Game...
+debug.createRoom:Creating Room...
+debug.loadRoom:Loading Room...
+debug.noSpawn:Nothing Spawned
+debug.attack:attacked with %d strength. %s health now %d.
+debug.enemyAttack:%s attacking with %d strength
+debug.health:Player health now %d
+debug.immortal:Immortality enabled no damage taken
