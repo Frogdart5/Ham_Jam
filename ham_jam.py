@@ -108,8 +108,8 @@ def get_items():
 
 
 def load_save(save_name=''):  # load items to correct locations in game
-    global main_save_folder_path
-    main_save_folder_path = os.path.join("Saves", save_name, "")
+    global save_file_name
+    save_file_name = os.path.join("Saves", save_name, "")
     global x_pos
     global y_pos
     global visited_rooms
@@ -307,6 +307,29 @@ def walk(direction=''):
 
 def game_quit():
     # save game
+    global x_pos
+    global y_pos
+    global visited_rooms
+    global rooms
+    global world_items
+    global world_enemies
+    global char_inventory
+    global char_health
+    global char_defense
+    # sets initial variable values
+    save_file_path = os.path.join(save_file_name, "main.txt")
+    os.remove(save_file_path)
+    save_file = open(save_file_path, "w")
+    save_file.write("x_pos:" + str(x_pos) + "\n")
+    save_file.write("y_pos:" + str(y_pos) + "\n")
+    save_file.write("visited_rooms:" + str(visited_rooms) + "\n")
+    save_file.write("char_health:" + str(char_health) + "\n")
+    save_file.write("char_defense:" + str(char_defense) + "\n")
+    save_file.write("rooms:" + str(rooms) + "\n")
+    save_file.write("world_enemies:" + str(world_enemies) + "\n")
+    save_file.write("world_items:" + str(world_items) + "\n")
+    save_file.write("char_inventory:" + str(char_inventory) + "\n")
+    save_file.close()
     load_menu()
     return
 
@@ -337,6 +360,7 @@ def game_start():
         else:
             print(dialogue['start.invalidResponse'])
     load_save(save_file)
+    print("\n" * 20)
     if debug_immortal:
         print(dialogue['debug.optionsEnabled'])
     if debug_text:
