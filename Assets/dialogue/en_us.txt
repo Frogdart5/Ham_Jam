@@ -1,8 +1,17 @@
-menu.selections: 1)Start 2)Options 3)Exit
+menu.selections:1)Start 2)Options 3)Exit
 menu.start:Start Game (Y/N)
 menu.exit:Are you sure you want to quit (Y/N)
-menu.options:Options 1)Language
+menu.options:Options 1)Language 2)Reset 3)Back
+menu.resetConfirm:Are you sure you want to delete all save files? (Y/N)
+menu.resetDeleted:Saves Deleted
+menu.resetUnknown:Please Enter Y or N
 menu.lang:Please choose a Language (currently %s)
+start.selectSave:Select a save file
+start.unknown:Save does not exist
+start.invalidResponse:Please Enter Y or N
+start.nameSave:Please name your save
+start.options:Would you like to load a save
+start.createSave:Creating save...
 cmd.unknown:Unknown Command
 cmd.unavailable:You can't do that right now
 attack.noTarget:There are no enemies nearby
@@ -10,6 +19,7 @@ attack.noWeapon:You don't have the %s
 attack.invalidWeapon:You can't attack with that
 attack.weaponHand:Hand
 attack.kill:%s was killed
+attack.death:You have died
 walk.north:north
 walk.south:south
 walk.east:east
@@ -18,7 +28,7 @@ walk.walking:Walking %s
 walk.unknown:Invalid direction
 walk.noArgs:Need a direction
 walk.unavailable:You Can't go that way
-walk.empty:The room is empty
+walk.empty:You find yourself in an empty room
 walk.occupied:There is a(n) %s in the room
 inventory.title:Inventory
 pickup.noNearby:There are no items around
@@ -32,6 +42,9 @@ consume.noArgs:What item?
 consume.hp:Your health is now %dHP
 item.apple:apple
 item.sword:sword
+item.uncommon:Uncommon Item
+item.rare:Rare Item
+item.legendary:Legendary Item
 enemy.common:Common Enemy
 enemy.uncommon:Uncommon Enemy
 enemy.rare:Rare Enemy

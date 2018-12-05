@@ -1,2 +1,5 @@
-apple,heal,3,item.apple,common
-sword,weapon,5,item.sword,common
+item.apple,heal,3,common
+item.sword,weapon,5,common
+item.uncommon,weapon,7,uncommon
+item.rare,weapon,10,rare
+item.legendary,weapon,15,legendary

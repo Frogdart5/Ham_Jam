@@ -1,5 +1,7 @@
 import random
 import uuid
+import os
+from ast import literal_eval
 
 
 def load_cmd_sets():
@@ -43,7 +45,9 @@ def cmd_interpreter():
     global all_cmd
     global quit_interpreter
     while not quit_interpreter:
+        print("")
         current_cmd_string = input(">: ")
+        print("")
         if not current_cmd_string.strip() == "":
             current_cmd = current_cmd_string.lower().rstrip().split()
             # Checks if command is a valid command and if the command is valid for current context
@@ -80,7 +84,6 @@ def load_dialogue(lang="en_us"):
 def get_items():
     global all_weapons
     global item_lookup  # dictionary with translated names as key. used to find internal name
-    global item_name
     global item_effect
     global item_strength
     global item_display_key
@@ -91,32 +94,95 @@ def get_items():
     for line in items_str:
         if len(line.strip(", ")) > 0:
             item_list = line.split(",")
-            item_name.append(item_list[0])
+            item_display_key.append(item_list[0])
             item_effect.append(item_list[1])
             item_strength.append(item_list[2])
-            item_display_key.append(item_list[3])
-            item_rarity.append(item_list[4])
-            item_lookup[dialogue[item_list[3]]] = item_list[3]
-            if item_list[1] == 'weapon' and item_list[3] not in all_weapons:
-                all_weapons.add(item_list[3])
-            if item_list[4] not in item_gen:
-                item_gen[item_list[4]] = []
-            item_gen[item_list[4]].append(item_list[3])
+            item_rarity.append(item_list[3])
+            item_lookup[dialogue[item_list[0]]] = item_list[0]
+            if item_list[1] == 'weapon' and item_list[0] not in all_weapons:
+                all_weapons.add(item_list[0])
+            if item_list[3] not in item_gen:
+                item_gen[item_list[3]] = []
+            item_gen[item_list[3]].append(item_list[0])
     return
 
 
-def load_save(save_num=0):  # load items to correct locations in game
-    global save_data
+def load_save(save_name=''):  # load items to correct locations in game
+    global main_save_folder_path
+    main_save_folder_path = os.path.join("Saves", save_name, "")
+    global x_pos
+    global y_pos
+    global visited_rooms
+    global rooms
+    global world_items
+    global world_enemies
+    global char_inventory
+    global char_health
+    global char_defense
     save_data = {}
-    save_file = open("Saves/save" + str(save_num) + ".txt", "r")
+    save_file_path = os.path.join("Saves", save_name, "main.txt")
+    save_file = open(save_file_path, "r")
     save_lines = save_file.read().split("\n")
     for line in save_lines:
         if len(line.strip(", ")) > 0:
-            save_str = line.split(":")
+            save_str = line.split(":", 1)
             save_data[save_str[0]] = save_str[1]
-    # TODO: put saveFile items in proper memory
+    x_pos = int(save_data['x_pos'])
+    y_pos = int(save_data['y_pos'])
+    visited_rooms = int(save_data['visited_rooms'])
+    char_health = int(save_data['char_health'])
+    char_defense = int(save_data['char_defense'])
+    rooms = literal_eval(save_data['rooms'])
+    world_items = literal_eval(save_data['world_items'])
+    world_enemies = literal_eval(save_data['world_enemies'])
+    char_inventory = literal_eval(save_data['char_inventory'])
     save_file.close()
     return
+
+
+def create_save(save="save1"):
+    global x_pos
+    global y_pos
+    global visited_rooms
+    global rooms
+    global world_items
+    global world_enemies
+    global char_inventory
+    global char_health
+    global char_defense
+    # sets initial variable values
+    x_pos = 0
+    y_pos = 0
+    visited_rooms = 0
+    rooms = {0: {0: [0, '']}}
+    world_enemies = {}
+    world_items = {}
+    char_inventory = {'item.sword': 1}  # internal item name, quantity
+    char_health = 20
+    char_defense = 1
+    print(dialogue['start.createSave'])
+    os.mkdir(os.path.join("Saves", save))
+    save_file_path = os.path.join("Saves", save, "main.txt")
+    save_file = open(save_file_path, "w")
+    save_file.write("x_pos:" + str(x_pos) + "\n")
+    save_file.write("y_pos:" + str(y_pos) + "\n")
+    save_file.write("visited_rooms:" + str(visited_rooms) + "\n")
+    save_file.write("char_health:" + str(char_health) + "\n")
+    save_file.write("char_defense:" + str(char_defense) + "\n")
+    save_file.write("rooms:" + str(rooms) + "\n")
+    save_file.write("world_enemies:" + str(world_enemies) + "\n")
+    save_file.write("world_items:" + str(world_items) + "\n")
+    save_file.write("char_inventory:" + str(char_inventory) + "\n")
+    save_file.close()
+    return
+
+
+def save_file_search():
+    all_saves = []
+    for directory in os.listdir(os.path.join(os.getcwd(), "Saves")):
+        print(directory)
+        all_saves.append(directory)
+    return all_saves
 
 
 def load_menu():
@@ -132,13 +198,13 @@ def load_menu():
 
 def create_room(x, y):
     global world_enemies
-    spawning_chance = random.randint(75, 100) # TODO: restore natural spawn rate
+    spawning_chance = random.randint(0, 100)
     if debug_text:
         print(dialogue['debug.createRoom'])
     if spawning_chance >= 75:  # Spawns item if chance over 75%
         spawned_entity = 1
         entity_uuid = uuid.uuid4()
-        item_spawn_chance = random.randint(0, 80) # TODO: restore natural spawn rate
+        item_spawn_chance = random.randint(0, 100)
         if item_spawn_chance == 100:  # legendary
             item_type = random.choice(item_gen['legendary'])
         elif item_spawn_chance >= 99:  # rare
@@ -246,7 +312,31 @@ def game_quit():
 
 
 def game_start():
-    # TODO: Load save file for game
+    answered_load = False
+    while not answered_load:
+        print(dialogue['start.options'])
+        response = input("(Y/N): ")
+        if response.lower() == "y":
+            avail_save_files = save_file_search()
+            save_found = False
+            while not save_found:
+                print(dialogue['start.selectSave'], end=":\n")
+                save_file_input = input("?: ").lower().strip()
+                if save_file_input in avail_save_files:
+                    save_found = True
+                    answered_load = True
+                    save_file = save_file_input
+                else:
+                    print(dialogue['start.unknown'])
+        elif response.lower() == "n":
+            print(dialogue['start.nameSave'])
+            save_file_input = input("?: ").lower().strip(" ,.:/\\")
+            save_file = save_file_input
+            create_save(save_file)
+            answered_load = True
+        else:
+            print(dialogue['start.invalidResponse'])
+    load_save(save_file)
     if debug_immortal:
         print(dialogue['debug.optionsEnabled'])
     if debug_text:
@@ -259,6 +349,32 @@ def game_start():
 def options():
     print(dialogue['menu.options'])
     set_avail_cmd("menu.options")
+    return
+
+
+def menu_reset():
+    print(dialogue['menu.resetConfirm'], end="\n\n")
+    save_list = save_file_search()
+    answered = False
+    while not answered:
+        response = input("(Y/N): ")
+        print()  # line spacing
+        if response.upper() == "Y":
+            answered = True
+            print(dialogue['menu.resetDeleted'])
+            for saves in save_list:
+                path = os.path.join("Saves", saves)
+                os.remove(path+".txt")
+        elif response.upper() == "N":
+            answered = True
+        else:
+            print(dialogue['menu.resetUnknown'])
+    options()
+    return
+
+
+def menu_back():
+    load_menu()
     return
 
 
@@ -342,6 +458,7 @@ def attack(weapon_input=''):
     global char_health
     global char_defense
     global debug_immortal
+    global main_save_folder_path
     if rooms[x_pos][y_pos][0] == 2:  # Check if enemy in room
         if weapon_input in item_lookup:  # search for internal name of weapon
             weapon = item_lookup[weapon_input]
@@ -380,8 +497,10 @@ def attack(weapon_input=''):
                     char_health -= (enemy_strength - char_defense)
                     print(dialogue['debug.health'] % char_health)
                     if char_health <= 0:
-                        print(dialogue['debug.death'])
-                        # TODO: handle death situations
+                        print(dialogue['attack.death'])
+                        os.remove(main_save_folder_path + "main.txt")  # delete save file
+                        os.rmdir(main_save_folder_path)
+                        load_menu()
                 else:
                     print(dialogue['debug.immortal'])
         elif weapon_input in char_inventory:  # if item not a weapon but is a valid item in the player inventory
@@ -393,10 +512,13 @@ def attack(weapon_input=''):
     return
 
 
+# setup all available commands
 all_cmd = {'walk': walk,
            'quit': game_quit,
            'start': game_start,
+           'back': menu_back,
            'exit': game_exit,
+           'reset': menu_reset,
            'options': options,
            'attack': attack,
            'inventory': inventory,
@@ -414,18 +536,10 @@ item_gen = {}
 load_cmd_sets()
 load_dialogue()
 get_items()
-# ready Load menu
-load_menu()  # Loads main menu
-# sets initial variable values
-world_items = {}
-x_pos = 0
-y_pos = 0
-rooms = {0: {0: [0, '']}}
-world_enemies = {}
-char_inventory = {'item.sword': 1, 'item.apple': 3}  # internal item name, quantity
-char_health = 20
-char_defense = 1
+# Debug options
 debug_immortal = False  # Debug option to prevent damage
 debug_text = False  # show debug Text
-quit_interpreter = False
-cmd_interpreter()
+quit_interpreter = False  # sets loop for command input
+# ready to Load menu
+load_menu()  # Loads main menu
+cmd_interpreter()  # starts text input
