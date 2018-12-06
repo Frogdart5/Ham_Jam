@@ -83,6 +83,7 @@ def load_dialogue(lang="en_us"):
 
 def get_items():
     global all_weapons
+    global weapon_type
     global item_lookup  # dictionary with translated names as key. used to find internal name
     global item_effect
     global item_strength
@@ -99,8 +100,10 @@ def get_items():
             item_strength.append(item_list[2])
             item_rarity.append(item_list[3])
             item_lookup[dialogue[item_list[0]].lower()] = item_list[0]
-            if item_list[1] == 'weapon' and item_list[0] not in all_weapons:
-                all_weapons.add(item_list[0])
+            if item_list[1] == 'weapon':
+                weapon_type[item_list[0]] = item_list[4]
+                if item_list[0] not in all_weapons:
+                    all_weapons.add(item_list[0])
             if item_list[3] not in item_gen:
                 item_gen[item_list[3]] = []
             item_gen[item_list[3]].append(item_list[0])
@@ -140,6 +143,7 @@ def load_save(save_name=''):  # load items to correct locations in game
     global char_inventory
     global char_health
     global char_defense
+    global boss_spawned
     save_data = {}
     save_file_path = os.path.join("Saves", save_name, "main.txt")
     save_file = open(save_file_path, "r")
@@ -152,6 +156,7 @@ def load_save(save_name=''):  # load items to correct locations in game
         x_pos = int(save_data['x_pos'])
         y_pos = int(save_data['y_pos'])
         visited_rooms = int(save_data['visited_rooms'])
+        boss_spawned = literal_eval(save_data['boss_spawned'])
         char_health = int(save_data['char_health'])
         char_defense = int(save_data['char_defense'])
         rooms = literal_eval(save_data['rooms'])
@@ -176,6 +181,7 @@ def create_save(save="save1"):
     global char_inventory
     global char_health
     global char_defense
+    global boss_spawned
     # sets initial variable values
     x_pos = 0
     y_pos = 0
@@ -194,6 +200,7 @@ def create_save(save="save1"):
     save_file.write("x_pos:" + str(x_pos) + "\n")
     save_file.write("y_pos:" + str(y_pos) + "\n")
     save_file.write("visited_rooms:" + str(visited_rooms) + "\n")
+    save_file.write("boss_spawned:" + str(boss_spawned) + "\n")
     save_file.write("char_health:" + str(char_health) + "\n")
     save_file.write("char_defense:" + str(char_defense) + "\n")
     save_file.write("rooms:" + str(rooms) + "\n")
@@ -205,11 +212,11 @@ def create_save(save="save1"):
 
 
 def save_file_search():
-    all_saves = []
+    all_saves = set()
     for directory in os.listdir(os.path.join(os.getcwd(), "Saves")):
-        print(directory)
-        all_saves.append(directory)
-    # TODO: remove listings for internal files e.g. .DS_Store
+        all_saves.add(directory)
+    if ".DS_Store" in all_saves:
+        all_saves.discard(".DS_Store")
     return all_saves
 
 
@@ -226,10 +233,25 @@ def load_menu():
 
 def create_room(x, y):
     global world_enemies
+    global visited_rooms
+    global boss_spawned
+    visited_rooms += 1
+    if debug_text:
+        print("%d" % visited_rooms)
     spawning_chance = random.randint(0, 100)
     if debug_text:
         print(dialogue['debug.createRoom'])
-    if spawning_chance >= 75:  # Spawns item if chance over 75%
+    if visited_rooms > difficulty and not boss_spawned:
+        spawning_chance = 101
+    if spawning_chance == 101:  # Spawn Boss
+        spawned_entity = 2
+        enemy_type = random.choice(enemy_gen['boss'])
+        entity_uuid = str(uuid.uuid4())
+        health = game_enemies[enemy_type][0]
+        enemy_attack = game_enemies[enemy_type][1]
+        world_enemies[entity_uuid] = [enemy_type, health, enemy_attack]
+        boss_spawned = True
+    elif spawning_chance >= 75:  # Spawns item if chance over 75%
         spawned_entity = 1
         entity_uuid = str(uuid.uuid4())
         item_spawn_chance = random.randint(0, 100)
@@ -250,16 +272,14 @@ def create_room(x, y):
         enemy_spawn_chance = random.randint(0, 100)
         if enemy_spawn_chance >= 100:  # rare
             enemy_type = random.choice(enemy_gen['rare'])
-            enemy_attack = 5
         elif enemy_spawn_chance >= 90:  # uncommon
             enemy_type = random.choice(enemy_gen['uncommon'])
-            enemy_attack = 3
         else:  # common
             enemy_type = random.choice(enemy_gen['common'])
-            enemy_attack = 2
         if debug_text:
             print(dialogue['debug.spawnedEnemy'] % dialogue[enemy_type])
         health = game_enemies[enemy_type][0]
+        enemy_attack = game_enemies[enemy_type][1]
         world_enemies[entity_uuid] = [enemy_type, health, enemy_attack]
     else:
         if debug_text:
@@ -344,6 +364,7 @@ def game_quit():
     save_file.write("x_pos:" + str(x_pos) + "\n")
     save_file.write("y_pos:" + str(y_pos) + "\n")
     save_file.write("visited_rooms:" + str(visited_rooms) + "\n")
+    save_file.write("boss_spawned:" + str(boss_spawned) + "\n")
     save_file.write("char_health:" + str(char_health) + "\n")
     save_file.write("char_defense:" + str(char_defense) + "\n")
     save_file.write("rooms:" + str(rooms) + "\n")
@@ -366,6 +387,8 @@ def game_start():
             save_found = False
             while not save_found:
                 print(dialogue['start.selectSave'], end=":\n")
+                for save in avail_save_files:
+                    print(save)
                 save_file_input = input("?: ").lower().strip()
                 if save_file_input in avail_save_files:
                     save_found = True
@@ -409,8 +432,10 @@ def menu_reset():
             answered = True
             print(dialogue['menu.resetDeleted'])
             for saves in save_list:
-                path = os.path.join("Saves", saves)
-                os.remove(path+".txt")
+                path_to_folder = os.path.join("Saves", saves)
+                path_to_file = os.path.join(path_to_folder, "main.txt")
+                os.remove(path_to_file)
+                os.rmdir(path_to_folder)
         elif response.upper() == "N":
             answered = True
         else:
@@ -517,11 +542,14 @@ def attack(weapon_input=''):
             weapon_name = weapon_input
             print("attacking with %s" % weapon_name)
             enemy_uuid = rooms[x_pos][y_pos][1]
+            attack_enemy_name = dialogue[world_enemies[enemy_uuid][0]]
             attack_enemy_health = world_enemies[enemy_uuid][1]
             attack_enemy_strength = world_enemies[enemy_uuid][2]
-            attack_enemy_name = dialogue[world_enemies[enemy_uuid][0]]
+            attack_enemy_resistance = game_enemies[world_enemies[enemy_uuid][0]][3]
+            attack_enemy_vulnerability = game_enemies[world_enemies[enemy_uuid][0]][4]
             if weapon == 'attack.hand':  # Use hand
                 weapon_strength = 1
+                attack_weapon_type = ''
             else:  # Lookup weapon strength
                 found = False
                 index = 0
@@ -531,13 +559,20 @@ def attack(weapon_input=''):
                     else:
                         index += 1
                 weapon_strength = int(item_strength[index])
-                attack_enemy_health -= weapon_strength
-            world_enemies[enemy_uuid][1] = attack_enemy_health
-            print(dialogue['debug.attack'] % (weapon_strength, attack_enemy_name, attack_enemy_health))
+                attack_weapon_type = weapon_type[weapon]
+            if attack_weapon_type == attack_enemy_resistance:
+                attack_multiplier = .75  # Enemy Resistant to attack so it takes a %25 reduction in damage
+            elif attack_weapon_type == attack_enemy_vulnerability:
+                attack_multiplier = 1.25  # Enemy vulnerable to attack so it takes a %25 increase in damage
+            else:
+                attack_multiplier = 1.0  # Enemy neither vulnerable nor resistant to attack
+            attack_enemy_health -= (weapon_strength*attack_multiplier)  # attacks enemy
+            world_enemies[enemy_uuid][1] = attack_enemy_health  # stores enemy health in proper location
+            print(dialogue['debug.attack'] % ((weapon_strength*attack_multiplier), attack_enemy_name, attack_enemy_health))
             if attack_enemy_health <= 0:  # remove Enemy
                 print(dialogue['attack.kill'] % attack_enemy_name)
                 world_enemies.pop(enemy_uuid)
-                rooms[x_pos][y_pos] = [0, '']
+                rooms[x_pos][y_pos] = [0, '']  # set room to contain nothing
             else:
                 print(dialogue['debug.enemyAttack'] % (attack_enemy_name, attack_enemy_strength))
                 if not debug_immortal:
@@ -545,10 +580,9 @@ def attack(weapon_input=''):
                     print(dialogue['debug.health'] % char_health)
                     if char_health <= 0:
                         print(dialogue['attack.death'])
-                        save_to_remove = os.path.join("Saves", save_file_name)
-                        save_file_to_remove = os.path.join(save_to_remove, "main.txt")
+                        save_file_to_remove = os.path.join(save_file_name, "main.txt")
                         os.remove(save_file_to_remove)  # delete save file
-                        os.rmdir(save_file_to_remove)  # delete save file folder
+                        os.rmdir(save_file_name)  # delete save file folder
                         load_menu()
                 else:
                     print(dialogue['debug.immortal'])
@@ -575,6 +609,7 @@ all_cmd = {'walk': walk,
            'pickup': pickup}
 # initialize
 all_weapons = set()
+weapon_type = dict()
 item_lookup = dict()
 item_effect = list()
 item_strength = list()
@@ -583,13 +618,15 @@ item_rarity = list()
 item_gen = dict()
 game_enemies = dict()
 enemy_gen = dict()
+difficulty = 15
+boss_spawned = False
 load_cmd_sets()
 load_dialogue()
 get_items()
 get_enemies()
 # Debug options
 debug_immortal = False  # Debug option to prevent damage
-debug_text = False  # show debug Text
+debug_text = True  # show debug Text
 quit_interpreter = False  # sets loop for command input
 # ready to Load menu
 load_menu()  # Loads main menu
