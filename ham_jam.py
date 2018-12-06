@@ -108,24 +108,19 @@ def get_items():
 
 
 def get_enemies():
-    global enemy_name
-    global enemy_strength
-    global enemy_health
-    global enemy_resistance
-    global enemy_vulnerability
-    global enemy_rarity
+    global game_enemies
     global enemy_gen
     enemies_file = open("Assets/enemies.csv", "r")
     enemies_str = enemies_file.read().split("\n")
     for line in enemies_str:
         if len(line.strip(", ")) > 0:
             enemy_list = line.split(",")
-            enemy_name.append(enemy_list[0])
-            enemy_health.append(enemy_list[1])
-            enemy_strength.append(enemy_list[2])
-            enemy_rarity.append(enemy_list[3])
-            enemy_resistance.append(enemy_list[4])
-            enemy_vulnerability.append(enemy_list[5])
+            game_enemies[enemy_list[0]] = list()
+            game_enemies[enemy_list[0]].append(int(enemy_list[1]))  # Health
+            game_enemies[enemy_list[0]].append(int(enemy_list[2]))  # Strength
+            game_enemies[enemy_list[0]].append(enemy_list[3])  # rarity
+            game_enemies[enemy_list[0]].append(enemy_list[4])  # resistance
+            game_enemies[enemy_list[0]].append(enemy_list[5])  # vulnerability
             if enemy_list[3] not in enemy_gen:
                 enemy_gen[enemy_list[3]] = []
             enemy_gen[enemy_list[3]].append(enemy_list[0])
@@ -153,16 +148,21 @@ def load_save(save_name=''):  # load items to correct locations in game
         if len(line.strip(", ")) > 0:
             save_str = line.split(":", 1)
             save_data[save_str[0]] = save_str[1]
-    x_pos = int(save_data['x_pos'])
-    y_pos = int(save_data['y_pos'])
-    visited_rooms = int(save_data['visited_rooms'])
-    char_health = int(save_data['char_health'])
-    char_defense = int(save_data['char_defense'])
-    rooms = literal_eval(save_data['rooms'])
-    world_items = literal_eval(save_data['world_items'])
-    world_enemies = literal_eval(save_data['world_enemies'])
-    char_inventory = literal_eval(save_data['char_inventory'])
-    save_file.close()
+    try:
+        x_pos = int(save_data['x_pos'])
+        y_pos = int(save_data['y_pos'])
+        visited_rooms = int(save_data['visited_rooms'])
+        char_health = int(save_data['char_health'])
+        char_defense = int(save_data['char_defense'])
+        rooms = literal_eval(save_data['rooms'])
+        world_items = literal_eval(save_data['world_items'])
+        world_enemies = literal_eval(save_data['world_enemies'])
+        char_inventory = literal_eval(save_data['char_inventory'])
+        save_file.close()
+    except KeyError:
+        print(dialogue['menu.loadFailed'])
+        load_menu()
+
     return
 
 
@@ -187,7 +187,8 @@ def create_save(save="save1"):
     char_health = 20
     char_defense = 1
     print(dialogue['start.createSave'])
-    os.mkdir(os.path.join("Saves", save))
+    if not os.path.exists(os.path.join("Saves", save)):
+        os.mkdir(os.path.join("Saves", save))
     save_file_path = os.path.join("Saves", save, "main.txt")
     save_file = open(save_file_path, "w")
     save_file.write("x_pos:" + str(x_pos) + "\n")
@@ -208,6 +209,7 @@ def save_file_search():
     for directory in os.listdir(os.path.join(os.getcwd(), "Saves")):
         print(directory)
         all_saves.append(directory)
+    # TODO: remove listings for internal files e.g. .DS_Store
     return all_saves
 
 
@@ -229,7 +231,7 @@ def create_room(x, y):
         print(dialogue['debug.createRoom'])
     if spawning_chance >= 75:  # Spawns item if chance over 75%
         spawned_entity = 1
-        entity_uuid = uuid.uuid4()
+        entity_uuid = str(uuid.uuid4())
         item_spawn_chance = random.randint(0, 100)
         if item_spawn_chance == 100:  # legendary
             item_type = random.choice(item_gen['legendary'])
@@ -244,22 +246,20 @@ def create_room(x, y):
         world_items[entity_uuid] = [item_type]
     elif spawning_chance >= 50:  # spawn enemy
         spawned_entity = 2
-        entity_uuid = uuid.uuid4()
+        entity_uuid = str(uuid.uuid4())
         enemy_spawn_chance = random.randint(0, 100)
         if enemy_spawn_chance >= 100:  # rare
-            enemy_type = random.choice(item_gen['rare'])
-            health = 10
+            enemy_type = random.choice(enemy_gen['rare'])
             enemy_attack = 5
         elif enemy_spawn_chance >= 90:  # uncommon
-            enemy_type = random.choice(item_gen['uncommon'])
-            health = 10
+            enemy_type = random.choice(enemy_gen['uncommon'])
             enemy_attack = 3
         else:  # common
             enemy_type = random.choice(enemy_gen['common'])
-            health = 10
             enemy_attack = 2
         if debug_text:
             print(dialogue['debug.spawnedEnemy'] % dialogue[enemy_type])
+        health = game_enemies[enemy_type][0]
         world_enemies[entity_uuid] = [enemy_type, health, enemy_attack]
     else:
         if debug_text:
@@ -338,9 +338,8 @@ def game_quit():
     global char_inventory
     global char_health
     global char_defense
-    # sets initial variable values
     save_file_path = os.path.join(save_file_name, "main.txt")
-    os.remove(save_file_path)
+    # os.remove(save_file_path)
     save_file = open(save_file_path, "w")
     save_file.write("x_pos:" + str(x_pos) + "\n")
     save_file.write("y_pos:" + str(y_pos) + "\n")
@@ -547,7 +546,7 @@ def attack(weapon_input=''):
                         print(dialogue['attack.death'])
                         save_to_remove = os.path.join("Saves", save_file_name)
                         save_file_to_remove = os.path.join(save_to_remove, "main.txt")
-                        os.remove(save_to_remove + "main.txt")  # delete save file
+                        os.remove(save_file_to_remove)  # delete save file
                         os.rmdir(save_file_to_remove)  # delete save file folder
                         load_menu()
                 else:
@@ -581,12 +580,7 @@ item_strength = list()
 item_name = list()
 item_rarity = list()
 item_gen = dict()
-enemy_name = list()
-enemy_strength = list()
-enemy_health = list()
-enemy_resistance = list()
-enemy_vulnerability = list()
-enemy_rarity = list()
+game_enemies = dict()
 enemy_gen = dict()
 load_cmd_sets()
 load_dialogue()

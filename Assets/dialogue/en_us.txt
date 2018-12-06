@@ -3,6 +3,7 @@ menu.start:Start Game (Y/N)
 menu.exit:Are you sure you want to quit (Y/N)
 menu.options:Options 1)Language 2)Reset 3)Back
 menu.resetConfirm:Are you sure you want to delete all save files? (Y/N)
+menu.loadFailed:Failed to load save file. Returning to menu
 menu.resetDeleted:Saves Deleted
 menu.resetUnknown:Please Enter Y or N
 menu.lang:Please choose a Language (currently %s)

@@ -1,10 +1,10 @@
-enemy.skeleton,5,7,common,piercing,bludgeoning
-enemy.zombie,7,5,common,piercing,slash
+enemy.skeleton,5,7,common,pierce,bludgeon
+enemy.zombie,7,5,common,pierce,slash
 enemy.mercenary,6,6,common,,
-enemy.darkKnight,15,8,uncommon,slash,piercing
-enemy.shrike,8,10,uncommon,piercing,
+enemy.darkKnight,15,8,uncommon,slash,pierce
+enemy.shrike,8,10,uncommon,pierce,
 enemy.minion,15,8,uncommon,,slash
-enemy.lord,25,13,rare,slash,bludgeoning
-enemy.banshee,30,11,rare,bludgeoning,slash
-enemy.revenant,20,15,rare,bludgeoning,piercing
+enemy.lord,25,13,rare,slash,bludgeon
+enemy.banshee,30,11,rare,bludgeon,slash
+enemy.revenant,20,15,rare,bludgeon,pierce
 enemy.hamJam,50,20,boss,,
