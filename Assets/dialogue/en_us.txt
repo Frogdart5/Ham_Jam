@@ -40,15 +40,31 @@ consume.unavailable:You don't have that item
 consume.invalid:You can't eat that
 consume.noArgs:What item?
 consume.hp:Your health is now %dHP
-item.apple:apple
-item.sword:sword
-item.uncommon:Uncommon Item
-item.rare:Rare Item
-item.legendary:Legendary Item
-enemy.common:Common Enemy
-enemy.uncommon:Uncommon Enemy
-enemy.rare:Rare Enemy
-enemy.legendary:Legendary Enemy
+item.apple:Apple
+item.axe:Axe
+item.shortBow:Short Bow
+item.mace:Mace
+item.flail:Flail
+item.longSword:Long Sword
+item.longBow:Long Bow
+item.greatSword:Great Sword
+item.crossbow:Crossbow
+item.maul:Maul
+item.yoYoDoom:Yo-Yo of Doom
+item.katana:"THE" Katana
+item.mithril:Mithril pebble of pigs smiting
+item.healPotion:Healing Potion
+item.gtrHealPotion:Greater Healing Potion
+enemy.skeleton:Skeleton
+enemy.zombie:Zombie
+enemy.mercenary:Mercenary
+enemy.darkKnight:Dark Knight
+enemy.shrike:Shrike
+enemy.minion:HOG Minion
+enemy.lord:HOG Lord
+enemy.banshee:Banshee
+enemy.revenant:Revenant
+enemy.hamJam:HAM JAM
 debug.optionsEnabled:One or more debug options are enabled
 debug.start:Starting Game...
 debug.createRoom:Creating Room...

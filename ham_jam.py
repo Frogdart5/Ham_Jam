@@ -49,7 +49,7 @@ def cmd_interpreter():
         current_cmd_string = input(">: ")
         print("")
         if not current_cmd_string.strip() == "":
-            current_cmd = current_cmd_string.lower().rstrip().split()
+            current_cmd = current_cmd_string.lower().rstrip().split(" ", 1)
             # Checks if command is a valid command and if the command is valid for current context
             if current_cmd[0] in all_cmd and current_cmd[0] in available_cmd:
                 # print("Understood Command:", current_cmd[0])
@@ -86,7 +86,7 @@ def get_items():
     global item_lookup  # dictionary with translated names as key. used to find internal name
     global item_effect
     global item_strength
-    global item_display_key
+    global item_name
     global item_rarity
     global item_gen
     items_file = open("Assets/items.csv", "r")
@@ -94,16 +94,42 @@ def get_items():
     for line in items_str:
         if len(line.strip(", ")) > 0:
             item_list = line.split(",")
-            item_display_key.append(item_list[0])
+            item_name.append(item_list[0])
             item_effect.append(item_list[1])
             item_strength.append(item_list[2])
             item_rarity.append(item_list[3])
-            item_lookup[dialogue[item_list[0]]] = item_list[0]
+            item_lookup[dialogue[item_list[0]].lower()] = item_list[0]
             if item_list[1] == 'weapon' and item_list[0] not in all_weapons:
                 all_weapons.add(item_list[0])
             if item_list[3] not in item_gen:
                 item_gen[item_list[3]] = []
             item_gen[item_list[3]].append(item_list[0])
+    return
+
+
+def get_enemies():
+    global enemy_name
+    global enemy_strength
+    global enemy_health
+    global enemy_resistance
+    global enemy_vulnerability
+    global enemy_rarity
+    global enemy_gen
+    enemies_file = open("Assets/enemies.csv", "r")
+    enemies_str = enemies_file.read().split("\n")
+    for line in enemies_str:
+        if len(line.strip(", ")) > 0:
+            enemy_list = line.split(",")
+            enemy_name.append(enemy_list[0])
+            enemy_health.append(enemy_list[1])
+            enemy_strength.append(enemy_list[2])
+            enemy_rarity.append(enemy_list[3])
+            enemy_resistance.append(enemy_list[4])
+            enemy_vulnerability.append(enemy_list[5])
+            if enemy_list[3] not in enemy_gen:
+                enemy_gen[enemy_list[3]] = []
+            enemy_gen[enemy_list[3]].append(enemy_list[0])
+
     return
 
 
@@ -157,7 +183,7 @@ def create_save(save="save1"):
     rooms = {0: {0: [0, '']}}
     world_enemies = {}
     world_items = {}
-    char_inventory = {'item.sword': 1}  # internal item name, quantity
+    char_inventory = {'item.axe': 1}  # internal item name, quantity
     char_health = 20
     char_defense = 1
     print(dialogue['start.createSave'])
@@ -220,20 +246,16 @@ def create_room(x, y):
         spawned_entity = 2
         entity_uuid = uuid.uuid4()
         enemy_spawn_chance = random.randint(0, 100)
-        if enemy_spawn_chance == 100:  # legendary
-            enemy_type = 'enemy.legendary'
-            health = 10
-            enemy_attack = 10
-        elif enemy_spawn_chance >= 99:  # rare
-            enemy_type = 'enemy.rare'
+        if enemy_spawn_chance >= 100:  # rare
+            enemy_type = random.choice(item_gen['rare'])
             health = 10
             enemy_attack = 5
         elif enemy_spawn_chance >= 90:  # uncommon
-            enemy_type = 'enemy.uncommon'
+            enemy_type = random.choice(item_gen['uncommon'])
             health = 10
             enemy_attack = 3
         else:  # common
-            enemy_type = 'enemy.common'
+            enemy_type = random.choice(enemy_gen['common'])
             health = 10
             enemy_attack = 2
         if debug_text:
@@ -426,6 +448,7 @@ def pickup(item_input=''):
                     char_inventory[pickup_item] = 0
                 print(dialogue['pickup.success'] % dialogue[pickup_item])
                 char_inventory[pickup_item] += 1
+                rooms[x_pos][y_pos] = [0, '']
             else:
                 print(dialogue['pickup.noItemNearby'])
     else:
@@ -434,7 +457,7 @@ def pickup(item_input=''):
 
 
 def consume(item_input=''):
-    global item_display_key
+    global item_name
     global item_strength
     global item_effect
     global char_health
@@ -446,8 +469,8 @@ def consume(item_input=''):
                 print(dialogue['debug.consume'])
             index = 0
             found = False
-            while index < len(item_display_key) and not found:
-                if item == item_display_key[index]:
+            while index < len(item_name) and not found:
+                if item == item_name[index]:
                     found = True
                 else:
                     index += 1
@@ -482,10 +505,10 @@ def attack(weapon_input=''):
     global char_health
     global char_defense
     global debug_immortal
-    global main_save_folder_path
+    global save_file_name
     if rooms[x_pos][y_pos][0] == 2:  # Check if enemy in room
-        if weapon_input in item_lookup:  # search for internal name of weapon
-            weapon = item_lookup[weapon_input]
+        if weapon_input.lower() in item_lookup:  # search for internal name of weapon
+            weapon = item_lookup[weapon_input.lower()]
         elif weapon_input == '':
             weapon = 'attack.hand'
         else:
@@ -494,43 +517,45 @@ def attack(weapon_input=''):
             weapon_name = weapon_input
             print("attacking with %s" % weapon_name)
             enemy_uuid = rooms[x_pos][y_pos][1]
-            enemy_health = world_enemies[enemy_uuid][1]
-            enemy_strength = world_enemies[enemy_uuid][2]
-            enemy_name = dialogue[world_enemies[enemy_uuid][0]]
+            attack_enemy_health = world_enemies[enemy_uuid][1]
+            attack_enemy_strength = world_enemies[enemy_uuid][2]
+            attack_enemy_name = dialogue[world_enemies[enemy_uuid][0]]
             if weapon == 'attack.hand':  # Use hand
                 weapon_strength = 1
             else:  # Lookup weapon strength
                 found = False
                 index = 0
-                while index < len(item_display_key) and not found:
-                    if weapon == item_display_key[index]:
+                while index < len(item_name) and not found:
+                    if weapon == item_name[index]:
                         found = True
                     else:
                         index += 1
-                weapon_strength = int(item_strength[index]) 
-            enemy_health -= weapon_strength
-            world_enemies[enemy_uuid][1] = enemy_health
-            print(dialogue['debug.attack'] % (weapon_strength, enemy_name, enemy_health))
-            if enemy_health <= 0:  # remove Enemy
-                print(dialogue['attack.kill'] % enemy_name)
+                weapon_strength = int(item_strength[index])
+                attack_enemy_health -= weapon_strength
+            world_enemies[enemy_uuid][1] = attack_enemy_health
+            print(dialogue['debug.attack'] % (weapon_strength, attack_enemy_name, attack_enemy_health))
+            if attack_enemy_health <= 0:  # remove Enemy
+                print(dialogue['attack.kill'] % attack_enemy_name)
                 world_enemies.pop(enemy_uuid)
                 rooms[x_pos][y_pos] = [0, '']
             else:
-                print(dialogue['debug.enemyAttack'] % (enemy_name, enemy_strength))
+                print(dialogue['debug.enemyAttack'] % (attack_enemy_name, attack_enemy_strength))
                 if not debug_immortal:
-                    char_health -= (enemy_strength - char_defense)
+                    char_health -= (attack_enemy_strength - char_defense)
                     print(dialogue['debug.health'] % char_health)
                     if char_health <= 0:
                         print(dialogue['attack.death'])
-                        os.remove(main_save_folder_path + "main.txt")  # delete save file
-                        os.rmdir(main_save_folder_path)
+                        save_to_remove = os.path.join("Saves", save_file_name)
+                        save_file_to_remove = os.path.join(save_to_remove, "main.txt")
+                        os.remove(save_to_remove + "main.txt")  # delete save file
+                        os.rmdir(save_file_to_remove)  # delete save file folder
                         load_menu()
                 else:
                     print(dialogue['debug.immortal'])
         elif weapon_input in char_inventory:  # if item not a weapon but is a valid item in the player inventory
             print(dialogue['attack.invalidWeapon'])
         else:
-            print(dialogue['attack.noWeapon'] % weapon)
+            print(dialogue['attack.noWeapon'] % dialogue[weapon])
     else:
         print(dialogue['attack.noTarget'])
     return
@@ -550,16 +575,23 @@ all_cmd = {'walk': walk,
            'pickup': pickup}
 # initialize
 all_weapons = set()
-item_lookup = {}
-item_name = []
-item_effect = []
-item_strength = []
-item_display_key = []
-item_rarity = []
-item_gen = {}
+item_lookup = dict()
+item_effect = list()
+item_strength = list()
+item_name = list()
+item_rarity = list()
+item_gen = dict()
+enemy_name = list()
+enemy_strength = list()
+enemy_health = list()
+enemy_resistance = list()
+enemy_vulnerability = list()
+enemy_rarity = list()
+enemy_gen = dict()
 load_cmd_sets()
 load_dialogue()
 get_items()
+get_enemies()
 # Debug options
 debug_immortal = False  # Debug option to prevent damage
 debug_text = False  # show debug Text
