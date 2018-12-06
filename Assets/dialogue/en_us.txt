@@ -35,6 +35,7 @@ inventory.title:Inventory
 pickup.noNearby:There are no items around
 pickup.noItemNearby:That item is not nearby
 pickup.success:You picked up the %s
+boss.nearby:You hear a laugh from a room over
 consume.success:You ate the %s and recovered %d HP
 consume.unknown:That item doesn't exist
 consume.unavailable:You don't have that item

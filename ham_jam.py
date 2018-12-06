@@ -307,9 +307,14 @@ def load_room(x, y):
         entity_uuid = rooms[x][y][1]
         if rooms[x][y][0] == 2:
             entity_name = dialogue[world_enemies[entity_uuid][0]]  # Gets name of entity
+            if game_enemies[world_enemies[entity_uuid][0]][2] = "boss": # Enemy is boss
+                lock_doors = True
+
         else:
             entity_name = dialogue[world_items[entity_uuid][0]]
         print(dialogue['walk.occupied'] % entity_name)
+    if visited_rooms == 14:
+        print(dialogue['boss.nearby'])
     return
 
 
@@ -605,7 +610,7 @@ all_cmd = {'walk': walk,
            'options': options,
            'attack': attack,
            'inventory': inventory,
-           'consume': consume,
+           'use': consume,
            'pickup': pickup}
 # initialize
 all_weapons = set()
@@ -620,13 +625,14 @@ game_enemies = dict()
 enemy_gen = dict()
 difficulty = 15
 boss_spawned = False
+lock_doors = False
 load_cmd_sets()
 load_dialogue()
 get_items()
 get_enemies()
 # Debug options
 debug_immortal = False  # Debug option to prevent damage
-debug_text = True  # show debug Text
+debug_text = False  # show debug Text
 quit_interpreter = False  # sets loop for command input
 # ready to Load menu
 load_menu()  # Loads main menu
