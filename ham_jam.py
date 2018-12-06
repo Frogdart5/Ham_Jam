@@ -90,6 +90,7 @@ def get_items():
     global item_name
     global item_rarity
     global item_gen
+    global weapon_durability
     items_file = open("Assets/items.csv", "r")
     items_str = items_file.read().split("\n")
     for line in items_str:
@@ -101,7 +102,8 @@ def get_items():
             item_rarity.append(item_list[3])
             item_lookup[dialogue[item_list[0]].lower()] = item_list[0]
             if item_list[1] == 'weapon':
-                weapon_type[item_list[0]] = item_list[4]
+                weapon_durability[item_list[0]] = 10
+                weapon_type[item_list[0]] = item_list[4]  # weapon type for resistance/vulnerability
                 if item_list[0] not in all_weapons:
                     all_weapons.add(item_list[0])
             if item_list[3] not in item_gen:
@@ -196,7 +198,7 @@ def create_save(save="save1"):
     world_enemies = dict()
     world_items = dict()
     char_equip = str()
-    char_inventory = {'item.axe': 1}  # internal item name, quantity
+    char_inventory = {'item.axe': [1, 10]}  # internal item name, quantity
     char_health = 20
     char_defense = 0.0
     boss_spawned = False
@@ -479,7 +481,12 @@ def inventory():
     global char_inventory
     print(dialogue['inventory.title'], end=':\n')
     for entry in char_inventory:
-        print(dialogue[entry], "x%d" % char_inventory[entry])
+        print(dialogue[entry], end=" ")
+        if entry == char_equip:  # show equipped if equipped
+            print("(%s)" % dialogue['inventory.equipped'], end=" ")
+        if entry in all_weapons:
+            print("(%d%%)" % ((char_inventory[entry][1]/weapon_durability[entry])*100), end=" ")
+        print("x%d" % char_inventory[entry][0])  # quantity
     return
 
 
@@ -522,9 +529,11 @@ def pickup(item_input=''):
                 pickup_item = room_item
             if pickup_item == room_item:
                 if pickup_item not in char_inventory:  # create entry for item if it doesn't exist
-                    char_inventory[pickup_item] = 0
+                    char_inventory[pickup_item] = [1, weapon_durability[pickup_item]]
+                else:
+                    char_inventory[pickup_item][0] += 1
                 print(dialogue['pickup.success'] % dialogue[pickup_item])
-                char_inventory[pickup_item] += 1
+                char_inventory[pickup_item][0] += 1
                 rooms[x_pos][y_pos] = [0, '']
             else:
                 print(dialogue['pickup.noItemNearby'])
@@ -620,8 +629,15 @@ def attack(weapon_input=''):
             else:
                 attack_multiplier = 1.0  # Enemy neither vulnerable nor resistant to attack
             attack_enemy_health -= (weapon_strength*attack_multiplier)  # attacks enemy
+            if weapon != "attack.hand":
+                char_inventory[weapon][1] -= 1
+                if char_inventory[weapon][1] == 0:  # no durability left
+                    char_inventory[weapon][0] -= 1
+                    if char_inventory[weapon][0] == 0:
+                        char_inventory.pop(weapon)
             world_enemies[enemy_uuid][1] = attack_enemy_health  # stores enemy health in proper location
-            print(dialogue['debug.attack'] % ((weapon_strength*attack_multiplier), attack_enemy_name, attack_enemy_health))
+            total_damage = (weapon_strength*attack_multiplier)
+            print(dialogue['debug.attack'] % (total_damage, attack_enemy_name, attack_enemy_health))
             if attack_enemy_health <= 0:  # remove Enemy
                 print(dialogue['attack.kill'] % attack_enemy_name)
                 world_enemies.pop(enemy_uuid)
@@ -677,6 +693,7 @@ item_rarity = list()
 item_gen = dict()
 game_enemies = dict()
 enemy_gen = dict()
+weapon_durability = dict()
 difficulty = 5
 load_cmd_sets()
 load_dialogue()

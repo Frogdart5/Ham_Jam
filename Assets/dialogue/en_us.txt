@@ -1,7 +1,7 @@
 menu.selections:1)Start 2)Options 3)Exit
 menu.start:Start Game (Y/N)
 menu.exit:Are you sure you want to quit (Y/N)
-menu.options:Options 1)Language 2)Reset 3)Back
+menu.options:Options 1)Reset 2)Back
 menu.resetConfirm:Are you sure you want to delete all save files? (Y/N)
 menu.loadFailed:Failed to load save file. Returning to menu
 menu.resetDeleted:Saves Deleted
@@ -18,7 +18,7 @@ cmd.unavailable:You can't do that right now
 attack.noTarget:There are no enemies nearby
 attack.noWeapon:You don't have the %s
 attack.invalidWeapon:You can't attack with that
-attack.weaponHand:Hand
+attack.hand:Hand
 attack.kill:%s was killed
 attack.death:You have died
 walk.north:north
@@ -33,6 +33,7 @@ walk.empty:You find yourself in an empty room
 walk.occupied:There is a(n) %s in the room
 walk.locked:the door is shut, you cannot leave
 inventory.title:Inventory
+inventory.equipped:Equipped
 pickup.noNearby:There are no items around
 pickup.noItemNearby:That item is not nearby
 pickup.success:You picked up the %s
