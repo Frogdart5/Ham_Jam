@@ -144,6 +144,8 @@ def load_save(save_name=''):  # load items to correct locations in game
     global char_health
     global char_defense
     global boss_spawned
+    global lock_doors
+    global char_equip
     save_data = {}
     save_file_path = os.path.join("Saves", save_name, "main.txt")
     save_file = open(save_file_path, "r")
@@ -158,11 +160,13 @@ def load_save(save_name=''):  # load items to correct locations in game
         visited_rooms = int(save_data['visited_rooms'])
         boss_spawned = literal_eval(save_data['boss_spawned'])
         char_health = int(save_data['char_health'])
-        char_defense = int(save_data['char_defense'])
+        char_defense = float(save_data['char_defense'])
         rooms = literal_eval(save_data['rooms'])
         world_items = literal_eval(save_data['world_items'])
         world_enemies = literal_eval(save_data['world_enemies'])
         char_inventory = literal_eval(save_data['char_inventory'])
+        lock_doors = literal_eval((save_data['lock_doors']))
+        char_equip = save_data['char_equip']
         save_file.close()
     except KeyError:
         print(dialogue['menu.loadFailed'])
@@ -182,16 +186,21 @@ def create_save(save="save1"):
     global char_health
     global char_defense
     global boss_spawned
+    global lock_doors
+    global char_equip
     # sets initial variable values
     x_pos = 0
     y_pos = 0
     visited_rooms = 0
     rooms = {0: {0: [0, '']}}
-    world_enemies = {}
-    world_items = {}
+    world_enemies = dict()
+    world_items = dict()
+    char_equip = str()
     char_inventory = {'item.axe': 1}  # internal item name, quantity
     char_health = 20
-    char_defense = 1
+    char_defense = 0.0
+    boss_spawned = False
+    lock_doors = False
     print(dialogue['start.createSave'])
     if not os.path.exists(os.path.join("Saves", save)):
         os.mkdir(os.path.join("Saves", save))
@@ -207,6 +216,9 @@ def create_save(save="save1"):
     save_file.write("world_enemies:" + str(world_enemies) + "\n")
     save_file.write("world_items:" + str(world_items) + "\n")
     save_file.write("char_inventory:" + str(char_inventory) + "\n")
+    save_file.write("boss_spawned:" + str(boss_spawned) + "\n")
+    save_file.write("lock_doors:" + str(lock_doors) + "\n")
+    save_file.write("char_equip:" + str(char_equip) + "\n")
     save_file.close()
     return
 
@@ -293,6 +305,7 @@ def create_room(x, y):
 
 
 def load_room(x, y):
+    global lock_doors
     room_exists = False
     if x in rooms:
         if y in rooms[x]:
@@ -307,13 +320,12 @@ def load_room(x, y):
         entity_uuid = rooms[x][y][1]
         if rooms[x][y][0] == 2:
             entity_name = dialogue[world_enemies[entity_uuid][0]]  # Gets name of entity
-            if game_enemies[world_enemies[entity_uuid][0]][2] = "boss": # Enemy is boss
-                lock_doors = True
+            lock_doors = True  # keep player in room until enemy defeated
 
         else:
             entity_name = dialogue[world_items[entity_uuid][0]]
         print(dialogue['walk.occupied'] % entity_name)
-    if visited_rooms == 14:
+    if visited_rooms == 15:
         print(dialogue['boss.nearby'])
     return
 
@@ -327,28 +339,32 @@ def game_exit():  # exit the game and finish the process
 def walk(direction=''):
     global x_pos
     global y_pos
+    global lock_doors
     moved = False
-    if direction.lower() == dialogue['walk.north']:
-        x_pos += 1
-        moved = True
-    elif direction.lower() == dialogue['walk.south']:
-        x_pos += -1
-        moved = True
-    elif direction.lower() == dialogue['walk.east']:
-        y_pos += 1
-        moved = True
-    elif direction.lower() == dialogue['walk.west']:
-        y_pos += -1
-        moved = True
-    if moved:
-        print(dialogue['walk.walking'] % direction.title())
-        load_room(x_pos, y_pos)
-        if debug_text:
-            print("X: %d Y: %d" % (x_pos, y_pos))
-    elif direction == '':
-        print(dialogue['walk.noArgs'])
-    else:
-        print(dialogue['walk.unknown'])
+    if not lock_doors:
+        if direction.lower() == dialogue['walk.north']:
+            x_pos += 1
+            moved = True
+        elif direction.lower() == dialogue['walk.south']:
+            x_pos += -1
+            moved = True
+        elif direction.lower() == dialogue['walk.east']:
+            y_pos += 1
+            moved = True
+        elif direction.lower() == dialogue['walk.west']:
+            y_pos += -1
+            moved = True
+        if moved:
+            print(dialogue['walk.walking'] % direction.title())
+            load_room(x_pos, y_pos)
+            if debug_text:
+                print("X: %d Y: %d" % (x_pos, y_pos))
+        elif direction == '':
+            print(dialogue['walk.noArgs'])
+        else:
+            print(dialogue['walk.unknown'])
+    else:  # doors are locked
+        print(dialogue['walk.locked'])
     return
 
 
@@ -363,6 +379,9 @@ def game_quit():
     global char_inventory
     global char_health
     global char_defense
+    global boss_spawned
+    global lock_doors
+    global char_equip
     save_file_path = os.path.join(save_file_name, "main.txt")
     # os.remove(save_file_path)
     save_file = open(save_file_path, "w")
@@ -376,6 +395,8 @@ def game_quit():
     save_file.write("world_enemies:" + str(world_enemies) + "\n")
     save_file.write("world_items:" + str(world_items) + "\n")
     save_file.write("char_inventory:" + str(char_inventory) + "\n")
+    save_file.write("lock_doors:" + str(lock_doors) + "\n")
+    save_file.write("char_equip:" + str(char_equip) + "\n")
     save_file.close()
     load_menu()
     return
@@ -462,6 +483,32 @@ def inventory():
     return
 
 
+def equip(armor_input=''):
+    global char_inventory
+    global item_lookup
+    global char_defense
+    global char_equip
+    if armor_input in item_lookup or armor_input == '':  # find internal name
+        if armor_input in item_lookup:
+            equip_item = item_lookup[armor_input]
+            if equip_item in char_inventory:
+                index = item_name.index(equip_item)
+                if item_effect[index] == "armor":
+                    if equip_item == char_equip:
+                        print(dialogue['equip.alreadyWorn'])
+                    else:
+                        char_equip = equip_item
+                        char_defense = int(item_strength[index])
+                        print(dialogue['equip.success'])
+                else:
+                    print(dialogue['equip.notArmor'])
+        elif armor_input == '':  # no item given
+            print(dialogue['equip.noArgs'])
+    else:
+        print("nonexistent")
+    return
+
+
 def pickup(item_input=''):
     global char_inventory
     global item_lookup
@@ -536,6 +583,7 @@ def attack(weapon_input=''):
     global char_defense
     global debug_immortal
     global save_file_name
+    global lock_doors
     if rooms[x_pos][y_pos][0] == 2:  # Check if enemy in room
         if weapon_input.lower() in item_lookup:  # search for internal name of weapon
             weapon = item_lookup[weapon_input.lower()]
@@ -578,10 +626,11 @@ def attack(weapon_input=''):
                 print(dialogue['attack.kill'] % attack_enemy_name)
                 world_enemies.pop(enemy_uuid)
                 rooms[x_pos][y_pos] = [0, '']  # set room to contain nothing
+                lock_doors = False
             else:
                 print(dialogue['debug.enemyAttack'] % (attack_enemy_name, attack_enemy_strength))
                 if not debug_immortal:
-                    char_health -= (attack_enemy_strength - char_defense)
+                    char_health -= (attack_enemy_strength-(attack_enemy_strength*char_defense))
                     print(dialogue['debug.health'] % char_health)
                     if char_health <= 0:
                         print(dialogue['attack.death'])
@@ -608,10 +657,15 @@ all_cmd = {'walk': walk,
            'exit': game_exit,
            'reset': menu_reset,
            'options': options,
+           'hit': attack,
            'attack': attack,
            'inventory': inventory,
            'use': consume,
-           'pickup': pickup}
+           'eat': consume,
+           'consume': consume,
+           'take': pickup,
+           'pickup': pickup,
+           'equip': equip}
 # initialize
 all_weapons = set()
 weapon_type = dict()
@@ -623,9 +677,7 @@ item_rarity = list()
 item_gen = dict()
 game_enemies = dict()
 enemy_gen = dict()
-difficulty = 15
-boss_spawned = False
-lock_doors = False
+difficulty = 5
 load_cmd_sets()
 load_dialogue()
 get_items()

@@ -31,6 +31,7 @@ walk.noArgs:Need a direction
 walk.unavailable:You Can't go that way
 walk.empty:You find yourself in an empty room
 walk.occupied:There is a(n) %s in the room
+walk.locked:the door is shut, you cannot leave
 inventory.title:Inventory
 pickup.noNearby:There are no items around
 pickup.noItemNearby:That item is not nearby
@@ -43,6 +44,7 @@ consume.invalid:You can't eat that
 consume.noArgs:What item?
 consume.hp:Your health is now %dHP
 item.apple:Apple
+item.egg:Egg
 item.axe:Axe
 item.shortBow:Short Bow
 item.mace:Mace
@@ -54,9 +56,13 @@ item.crossbow:Crossbow
 item.maul:Maul
 item.yoYoDoom:Yo-Yo of Doom
 item.katana:"THE" Katana
-item.mithril:Mithril pebble of pigs smiting
+item.mithril:The Mithril pebble of pig smiting
 item.healPotion:Healing Potion
 item.gtrHealPotion:Greater Healing Potion
+item.leatherArmor:Leather Armor
+item.chainArmor:Chainmail Armor
+item.plateArmor:Platemail Armor
+item.diamondArmor:Diamond Armor
 enemy.skeleton:Skeleton
 enemy.zombie:Zombie
 enemy.mercenary:Mercenary
@@ -67,6 +73,10 @@ enemy.lord:HOG Lord
 enemy.banshee:Banshee
 enemy.revenant:Revenant
 enemy.hamJam:HAM JAM
+equip.noArgs:What do you want to equip?
+equip.alreadyWorn:You're already wearing that
+equip.notArmor:You can't wear that
+equip.success:Armor Equipped
 debug.optionsEnabled:One or more debug options are enabled
 debug.start:Starting Game...
 debug.createRoom:Creating Room...

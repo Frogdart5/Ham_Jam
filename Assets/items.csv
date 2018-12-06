@@ -1,6 +1,11 @@
 item.apple,heal,3,common
+item.egg,heal,5,common
 item.healPotion,heal,10,uncommon
 item.gtrHealPotion,heal,15,rare
+item.leatherArmor,armor,.20,common
+item.chainArmor,armor,.40,uncommon
+item.plateArmor,armor,.80,rare
+item.diamondArmor,armor,.95,legendary
 item.axe,weapon,6,common,slash
 item.shortBow,weapon,6,common,pierce
 item.mace,weapon,6,common,bludgeoning
@@ -12,4 +17,4 @@ item.crossbow,weapon,10,rare,pierce
 item.maul,weapon,12,rare,bludgeon
 item.yoYoDoom,weapon,12,legendary,bludgeon
 item.katana,weapon,12,legendary,slash
-item.mithril,weapon,12,legendary,pierce
+item.mithril,weapon,18,legendary,pierce
