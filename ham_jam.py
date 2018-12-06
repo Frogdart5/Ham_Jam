@@ -357,6 +357,7 @@ def game_quit():
 
 def game_start():
     answered_load = False
+    save_file = ""
     while not answered_load:
         print(dialogue['start.options'])
         response = input("(Y/N): ")
