@@ -103,11 +103,12 @@ def get_items():
             item_rarity.append(item_list[3])
             item_lookup[dialogue[item_list[0]].lower()] = item_list[0]
             if item_list[1] == 'weapon':
-                weapon_durability[item_list[0]] = int(item_list[5])
+                weapon_durability[item_list[0]] = int(item_list[5])  # weapon durability
                 weapon_type[item_list[0]] = item_list[4]  # weapon type for resistance/vulnerability
                 if item_list[0] not in all_weapons:
                     all_weapons.add(item_list[0])
-            if item_list[3] not in item_gen:
+                    # list of all weapons for use in checking if item is being used right
+            if item_list[3] not in item_gen:  # used for room spawning
                 item_gen[item_list[3]] = []
             item_gen[item_list[3]].append(item_list[0])
     return
@@ -199,8 +200,8 @@ def create_save(save="save1"):
     world_enemies = dict()
     world_items = dict()
     char_equip = str()
-    char_inventory = {'item.axe': [1, 25]}  # internal item name, quantity
-    char_health = 20
+    char_inventory = {'item.axe': [2, 3]}  # internal item name, quantity
+    char_health = 20  # TODO Resotre normal durability
     char_defense = 0.0
     boss_spawned = False
     lock_doors = False
@@ -573,7 +574,6 @@ def pickup(item_input=''):
                 else:
                     char_inventory[pickup_item][0] += 1
                 print(dialogue['pickup.success'] % dialogue[pickup_item])
-                char_inventory[pickup_item][0] += 1
                 rooms[x_pos][y_pos] = [0, '']
             else:
                 print(dialogue['pickup.noItemNearby'])
@@ -674,9 +674,11 @@ def attack(weapon_input=''):
             attack_enemy_health -= (weapon_strength*attack_multiplier)  # attacks enemy
             if weapon != "attack.hand":
                 char_inventory[weapon][1] -= 1
-                if char_inventory[weapon][1] == 0:  # no durability left
+                if char_inventory[weapon][1] <= 0:  # no durability left
                     char_inventory[weapon][0] -= 1
-                    if char_inventory[weapon][0] == 0:
+                    char_inventory[weapon][1] = weapon_durability[weapon]
+                    if char_inventory[weapon][0] <= 0:
+                        print(dialogue['attack.weaponBroke'] % dialogue[weapon])
                         char_inventory.pop(weapon)
             world_enemies[enemy_uuid][1] = attack_enemy_health  # stores enemy health in proper location
             total_damage = (weapon_strength*attack_multiplier)
