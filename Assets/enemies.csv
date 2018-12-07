@@ -7,4 +7,4 @@ enemy.minion,15,8,uncommon,,slash
 enemy.lord,25,13,rare,slash,bludgeon
 enemy.banshee,30,11,rare,bludgeon,slash
 enemy.revenant,20,15,rare,bludgeon,pierce
-enemy.hamJam,60,18,boss,,
+enemy.hamJam,40,18,boss,,

@@ -102,7 +102,7 @@ def get_items():
             item_rarity.append(item_list[3])
             item_lookup[dialogue[item_list[0]].lower()] = item_list[0]
             if item_list[1] == 'weapon':
-                weapon_durability[item_list[0]] = 10
+                weapon_durability[item_list[0]] = int(item_list[5])
                 weapon_type[item_list[0]] = item_list[4]  # weapon type for resistance/vulnerability
                 if item_list[0] not in all_weapons:
                     all_weapons.add(item_list[0])
@@ -198,7 +198,7 @@ def create_save(save="save1"):
     world_enemies = dict()
     world_items = dict()
     char_equip = str()
-    char_inventory = {'item.axe': [1, 10]}  # internal item name, quantity
+    char_inventory = {'item.axe': [1, 25]}  # internal item name, quantity
     char_health = 20
     char_defense = 0.0
     boss_spawned = False
@@ -255,7 +255,7 @@ def create_room(x, y):
     spawning_chance = random.randint(0, 100)
     if debug_text:
         print(dialogue['debug.createRoom'])
-    if visited_rooms > difficulty and not boss_spawned:
+    if visited_rooms >= difficulty and not boss_spawned:
         spawning_chance = 101
     if spawning_chance == 101:  # Spawn Boss
         spawned_entity = 2
@@ -327,7 +327,7 @@ def load_room(x, y):
         else:
             entity_name = dialogue[world_items[entity_uuid][0]]
         print(dialogue['walk.occupied'] % entity_name)
-    if visited_rooms == 15:
+    if visited_rooms == difficulty-1:
         print(dialogue['boss.nearby'])
     return
 
@@ -477,6 +477,21 @@ def menu_back():
     return
 
 
+def game_help():
+    print("TODO: get help")
+    return
+
+
+def end_credits():
+    file_path = os.path.join("Assets", "Art", "Boss", "logo.txt")  # system agnostic file path
+    end_credits_file = open(file_path, "r")
+    end_credits_art = end_credits_file.read()
+    end_credits_file.close()
+    print(end_credits_art)
+    load_menu()
+    return
+
+
 def inventory():
     global char_inventory
     global weapon_type
@@ -494,7 +509,7 @@ def inventory():
             entry_type = weapon_type[entry]
             print(dialogue['inventory.weaponExtended'] % (strength, entry_type))
         elif item_effect[index].lower() == 'armor':
-            print(dialogue['inventory.armorExtended'] % int(item_strength[index])*100)
+            print(dialogue['inventory.armorExtended'] % float(item_strength[index])*100)
         else:
             print(dialogue['inventory.itemExtended'] % int(item_strength[index]))
     return
@@ -515,7 +530,7 @@ def equip(armor_input=''):
                         print(dialogue['equip.alreadyWorn'])
                     else:
                         char_equip = equip_item
-                        char_defense = int(item_strength[index])
+                        char_defense = float(item_strength[index])
                         print(dialogue['equip.success'])
                 else:
                     print(dialogue['equip.notArmor'])
@@ -577,8 +592,8 @@ def consume(item_input=''):
                 char_health += int(item_strength[index])
                 print(dialogue['consume.success'] % (dialogue[item], int(item_strength[index])))
                 print(dialogue['consume.hp'] % char_health)
-                char_inventory[item] -= 1  # Remove one item from inventory on use
-                if char_inventory[item] == 0:
+                char_inventory[item][0] -= 1  # Remove one item from inventory on use
+                if char_inventory[item][0] == 0:
                     char_inventory.pop(item)
             elif found:
                 print(dialogue['consume.invalid'])  # found item but item can't be eaten
@@ -656,16 +671,21 @@ def attack(weapon_input=''):
             print(dialogue['debug.attack'] % (total_damage, attack_enemy_name, attack_enemy_health))
             if attack_enemy_health <= 0:  # remove Enemy
                 print(dialogue['attack.kill'] % attack_enemy_name)
+                end_game = False
+                if game_enemies[world_enemies[enemy_uuid][0]][2] == "boss":
+                    end_game = True
                 world_enemies.pop(enemy_uuid)
                 rooms[x_pos][y_pos] = [0, '']  # set room to contain nothing
                 lock_doors = False
+                if end_game:
+                    end_credits()
             else:
                 print(dialogue['debug.enemyAttack'] % (attack_enemy_name, attack_enemy_strength))
                 if not debug_immortal:
                     char_health -= (attack_enemy_strength-(attack_enemy_strength*char_defense))
                     print(dialogue['debug.health'] % char_health)
                     if char_health <= 0:
-                        print(dialogue['attack.death'])
+                        print(dialogue['attack.death'])  # Player dies
                         save_file_to_remove = os.path.join(save_file_name, "main.txt")
                         os.remove(save_file_to_remove)  # delete save file
                         os.rmdir(save_file_name)  # delete save file folder
@@ -699,7 +719,8 @@ all_cmd = {'walk': walk,
            'consume': consume,
            'take': pickup,
            'pickup': pickup,
-           'equip': equip}
+           'equip': equip,
+           'help': game_help}
 # initialize
 all_weapons = set()
 weapon_type = dict()
@@ -712,7 +733,7 @@ item_gen = dict()
 game_enemies = dict()
 enemy_gen = dict()
 weapon_durability = dict()
-difficulty = 5
+difficulty = 18
 load_cmd_sets()
 load_dialogue()
 get_items()

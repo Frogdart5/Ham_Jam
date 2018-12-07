@@ -37,7 +37,7 @@ inventory.title:Inventory
 inventory.equipped:Equipped
 inventory.weaponExtended:Strength: %d Type: %s
 inventory.armorExtended:Damage reduced by %d%%
-inventory.itemExtended:HP:%d
+inventory.itemExtended:HP: %d
 pickup.noNearby:There are no items around
 pickup.noItemNearby:That item is not nearby
 pickup.success:You picked up the %s
