@@ -1,7 +1,7 @@
-item.apple,heal,3,common
-item.egg,heal,5,common
-item.healPotion,heal,10,uncommon
-item.gtrHealPotion,heal,15,rare
+item.apple,heal,5,common
+item.egg,heal,8,common
+item.healPotion,heal,15,uncommon
+item.gtrHealPotion,heal,20,rare
 item.leatherArmor,armor,.20,common
 item.chainArmor,armor,.40,uncommon
 item.plateArmor,armor,.80,rare

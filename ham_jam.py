@@ -2,6 +2,7 @@ import random
 import uuid
 import os
 from ast import literal_eval
+import math
 
 
 def load_cmd_sets():
@@ -265,7 +266,7 @@ def create_room(x, y):
         enemy_attack = game_enemies[enemy_type][1]
         world_enemies[entity_uuid] = [enemy_type, health, enemy_attack]
         boss_spawned = True
-    elif spawning_chance >= 75:  # Spawns item if chance over 75%
+    elif spawning_chance >= 66:  # Spawns item if chance over 75%
         spawned_entity = 1
         entity_uuid = str(uuid.uuid4())
         item_spawn_chance = random.randint(0, 100)
@@ -280,7 +281,7 @@ def create_room(x, y):
         if debug_text:
             print(dialogue['debug.spawnedItem'] % dialogue[item_type])
         world_items[entity_uuid] = [item_type]
-    elif spawning_chance >= 50:  # spawn enemy
+    elif spawning_chance >= 33:  # spawn enemy
         spawned_entity = 2
         entity_uuid = str(uuid.uuid4())
         enemy_spawn_chance = random.randint(0, 100)
@@ -329,6 +330,10 @@ def load_room(x, y):
         print(dialogue['walk.occupied'] % entity_name)
     if visited_rooms == difficulty-1:
         print(dialogue['boss.nearby'])
+    elif visited_rooms == math.floor(difficulty*(2/3)):
+        print(dialogue['boss.closer'])
+    elif visited_rooms == math.floor(difficulty/3):
+        print(dialogue['boss.approaching'])
     return
 
 
@@ -482,8 +487,13 @@ def game_help():
     return
 
 
+def game_status():
+    print(dialogue['status.self'] % char_health)
+    return
+
+
 def end_credits():
-    file_path = os.path.join("Assets", "Art", "Boss", "logo.txt")  # system agnostic file path
+    file_path = os.path.join("Assets", "Art", "Boss", "ham_jam.txt")  # system agnostic file path
     end_credits_file = open(file_path, "r")
     end_credits_art = end_credits_file.read()
     end_credits_file.close()
@@ -509,7 +519,7 @@ def inventory():
             entry_type = weapon_type[entry]
             print(dialogue['inventory.weaponExtended'] % (strength, entry_type))
         elif item_effect[index].lower() == 'armor':
-            print(dialogue['inventory.armorExtended'] % float(item_strength[index])*100)
+            print(dialogue['inventory.armorExtended'] % (float(item_strength[index])*100))
         else:
             print(dialogue['inventory.itemExtended'] % int(item_strength[index]))
     return
@@ -720,7 +730,8 @@ all_cmd = {'walk': walk,
            'take': pickup,
            'pickup': pickup,
            'equip': equip,
-           'help': game_help}
+           'help': game_help,
+           'status': game_status}
 # initialize
 all_weapons = set()
 weapon_type = dict()

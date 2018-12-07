@@ -38,10 +38,13 @@ inventory.equipped:Equipped
 inventory.weaponExtended:Strength: %d Type: %s
 inventory.armorExtended:Damage reduced by %d%%
 inventory.itemExtended:HP: %d
+status.self:HP: %d
 pickup.noNearby:There are no items around
 pickup.noItemNearby:That item is not nearby
 pickup.success:You picked up the %s
-boss.nearby:You hear a laugh from a room over
+boss.approaching:In the distance you here a cackle
+boss.closer:Louder, you hear another cackle
+boss.nearby:You hear a cackle from the other side of the wall
 consume.success:You ate the %s and recovered %d HP
 consume.unknown:That item doesn't exist
 consume.unavailable:You don't have that item
