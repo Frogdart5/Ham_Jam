@@ -85,6 +85,14 @@ equip.noArgs:What do you want to equip?
 equip.alreadyWorn:You're already wearing that
 equip.notArmor:You can't wear that
 equip.success:Armor Equipped
+help.0:Walk (direction) - Walk North, South, East, or West
+help.1:Attack (weapon) - attacks an enemy
+help.2:Pickup/Take/Collect (item) - picks up item in room
+help.3:Consume/Use/Eat (consumable) - uses item in inventory
+help.4:Inventory - Shows all item in inventory
+help.5:Equip (armor) - puts on armor
+help.6:Status - Shows player health
+help.7:Quit - Saves and Quits Game
 debug.optionsEnabled:One or more debug options are enabled
 debug.start:Starting Game...
 debug.createRoom:Creating Room...

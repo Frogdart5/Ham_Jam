@@ -337,7 +337,7 @@ def load_room(x, y):
     return
 
 
-def game_exit():  # exit the game and finish the process
+def game_exit(ignored=''):  # exit the game and finish the process
     global quit_interpreter
     quit_interpreter = True
     return
@@ -375,7 +375,7 @@ def walk(direction=''):
     return
 
 
-def game_quit():
+def game_quit(ignored=''):
     # save game
     global x_pos
     global y_pos
@@ -409,7 +409,7 @@ def game_quit():
     return
 
 
-def game_start():
+def game_start(ignored=''):
     answered_load = False
     save_file = ""
     while not answered_load:
@@ -448,13 +448,13 @@ def game_start():
     return
 
 
-def options():
+def options(ignored=''):
     print(dialogue['menu.options'])
     set_avail_cmd("menu.options")
     return
 
 
-def menu_reset():
+def menu_reset(ignored=''):
     print(dialogue['menu.resetConfirm'], end="\n\n")
     save_list = save_file_search()
     answered = False
@@ -477,17 +477,19 @@ def menu_reset():
     return
 
 
-def menu_back():
+def menu_back(ignored=''):
     load_menu()
     return
 
 
-def game_help():
-    print("TODO: get help")
+def game_help(ignored=''):
+    for help_line in range(0,8):
+        line = "help." + str(help_line)
+        print(dialogue[line])
     return
 
 
-def game_status():
+def game_status(ignored=''):
     print(dialogue['status.self'] % char_health)
     return
 
@@ -502,7 +504,7 @@ def end_credits():
     return
 
 
-def inventory():
+def inventory(ignored=''):
     global char_inventory
     global weapon_type
     print(dialogue['inventory.title'], end=':\n')
@@ -728,6 +730,7 @@ all_cmd = {'walk': walk,
            'eat': consume,
            'consume': consume,
            'take': pickup,
+           'collect': pickup,
            'pickup': pickup,
            'equip': equip,
            'help': game_help,
