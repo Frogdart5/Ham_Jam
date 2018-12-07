@@ -75,7 +75,7 @@ def load_dialogue(lang="en_us"):
     dialogue_lines = dialogue_file.read().split("\n")
     for line in dialogue_lines:
         if len(line.strip(", ")) > 0:
-            dialogue_str = line.split(":")
+            dialogue_str = line.split(":", 1)
             dialogue[dialogue_str[0]] = str(dialogue_str[1])
     dialogue_file.close()
     return
@@ -479,14 +479,24 @@ def menu_back():
 
 def inventory():
     global char_inventory
+    global weapon_type
     print(dialogue['inventory.title'], end=':\n')
     for entry in char_inventory:
+        index = item_name.index(entry)
         print(dialogue[entry], end=" ")
         if entry == char_equip:  # show equipped if equipped
             print("(%s)" % dialogue['inventory.equipped'], end=" ")
         if entry in all_weapons:
             print("(%d%%)" % ((char_inventory[entry][1]/weapon_durability[entry])*100), end=" ")
-        print("x%d" % char_inventory[entry][0])  # quantity
+        print("x%d" % char_inventory[entry][0], end=" - ")  # quantity
+        if item_effect[index].lower() == 'weapon':
+            strength = int(item_strength[index])
+            entry_type = weapon_type[entry]
+            print(dialogue['inventory.weaponExtended'] % (strength, entry_type))
+        elif item_effect[index].lower() == 'armor':
+            print(dialogue['inventory.armorExtended'] % int(item_strength[index])*100)
+        else:
+            print(dialogue['inventory.itemExtended'] % int(item_strength[index]))
     return
 
 
@@ -529,7 +539,10 @@ def pickup(item_input=''):
                 pickup_item = room_item
             if pickup_item == room_item:
                 if pickup_item not in char_inventory:  # create entry for item if it doesn't exist
-                    char_inventory[pickup_item] = [1, weapon_durability[pickup_item]]
+                    if pickup_item in all_weapons:
+                        char_inventory[pickup_item] = [1, weapon_durability[pickup_item]]
+                    else:
+                        char_inventory[pickup_item] = [1]
                 else:
                     char_inventory[pickup_item][0] += 1
                 print(dialogue['pickup.success'] % dialogue[pickup_item])
@@ -601,7 +614,10 @@ def attack(weapon_input=''):
         else:
             weapon = ''
         if (weapon in char_inventory and weapon in all_weapons) or weapon == 'attack.hand':
-            weapon_name = weapon_input
+            if weapon == 'attack.hand':
+                weapon_name = dialogue['attack.hand']
+            else:
+                weapon_name = weapon_input
             print("attacking with %s" % weapon_name)
             enemy_uuid = rooms[x_pos][y_pos][1]
             attack_enemy_name = dialogue[world_enemies[enemy_uuid][0]]
@@ -658,8 +674,10 @@ def attack(weapon_input=''):
                     print(dialogue['debug.immortal'])
         elif weapon_input in char_inventory:  # if item not a weapon but is a valid item in the player inventory
             print(dialogue['attack.invalidWeapon'])
-        else:
+        elif weapon in all_weapons:
             print(dialogue['attack.noWeapon'] % dialogue[weapon])
+        else:
+            print(dialogue['attack.notItem'])
     else:
         print(dialogue['attack.noTarget'])
     return

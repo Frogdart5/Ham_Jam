@@ -21,6 +21,7 @@ attack.invalidWeapon:You can't attack with that
 attack.hand:Hand
 attack.kill:%s was killed
 attack.death:You have died
+attack.notItem:that weapon doesn't exist
 walk.north:north
 walk.south:south
 walk.east:east
@@ -34,6 +35,9 @@ walk.occupied:There is a(n) %s in the room
 walk.locked:the door is shut, you cannot leave
 inventory.title:Inventory
 inventory.equipped:Equipped
+inventory.weaponExtended:Strength: %d Type: %s
+inventory.armorExtended:Damage reduced by %d%%
+inventory.itemExtended:HP:%d
 pickup.noNearby:There are no items around
 pickup.noItemNearby:That item is not nearby
 pickup.success:You picked up the %s
@@ -45,7 +49,7 @@ consume.invalid:You can't eat that
 consume.noArgs:What item?
 consume.hp:Your health is now %dHP
 item.apple:Apple
-item.egg:Egg
+item.egg:Easter Egg
 item.axe:Axe
 item.shortBow:Short Bow
 item.mace:Mace
