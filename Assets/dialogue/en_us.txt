@@ -23,6 +23,8 @@ attack.kill:%s was killed
 attack.death:You have died
 attack.weaponBroke:The %s broke
 attack.notItem:that weapon doesn't exist
+attack.damage:%s took %d damage
+attack.counter:%s attacked. You took %d damage
 walk.north:north
 walk.south:south
 walk.east:east
@@ -32,7 +34,8 @@ walk.unknown:Invalid direction
 walk.noArgs:Need a direction
 walk.unavailable:You Can't go that way
 walk.empty:You find yourself in an empty room
-walk.occupied:There is a(n) %s in the room
+walk.occupiedEnemy:A(n) %s(%d HP) appeared
+walk.occupiedItem:There is a(n) %s sitting in the room
 walk.locked:the door is shut, you cannot leave
 inventory.title:Inventory
 inventory.equipped:Equipped

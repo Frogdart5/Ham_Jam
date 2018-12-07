@@ -318,17 +318,20 @@ def load_room(x, y):
         create_room(x, y)
     if debug_text:
         print(dialogue['debug.loadRoom'])
+    entity_uuid = rooms[x][y][1]
     if rooms[x][y][0] == 0:
         print(dialogue['walk.empty'])
-    else:
+    elif rooms[x][y][0] == 2:
         entity_uuid = rooms[x][y][1]
         if rooms[x][y][0] == 2:
-            entity_name = dialogue[world_enemies[entity_uuid][0]]  # Gets name of entity
+            load_enemy_name = dialogue[world_enemies[entity_uuid][0]]  # Gets name of entity
+            load_enemy_health = world_enemies[entity_uuid][2]
             lock_doors = True  # keep player in room until enemy defeated
-
-        else:
-            entity_name = dialogue[world_items[entity_uuid][0]]
-        print(dialogue['walk.occupied'] % entity_name)
+            print(dialogue['walk.occupiedEnemy'] % (load_enemy_name, load_enemy_health))
+    else:
+        load_item_name = dialogue[world_items[entity_uuid][0]]
+        print(dialogue['walk.occupiedItem'] % load_item_name)
+    # Hint to player about boss
     if visited_rooms == difficulty-1:
         print(dialogue['boss.nearby'])
     elif visited_rooms == math.floor(difficulty*(2/3)):
@@ -645,7 +648,6 @@ def attack(weapon_input=''):
                 weapon_name = dialogue['attack.hand']
             else:
                 weapon_name = weapon_input
-            print("attacking with %s" % weapon_name)
             enemy_uuid = rooms[x_pos][y_pos][1]
             attack_enemy_name = dialogue[world_enemies[enemy_uuid][0]]
             attack_enemy_health = world_enemies[enemy_uuid][1]
@@ -682,7 +684,7 @@ def attack(weapon_input=''):
                         char_inventory.pop(weapon)
             world_enemies[enemy_uuid][1] = attack_enemy_health  # stores enemy health in proper location
             total_damage = (weapon_strength*attack_multiplier)
-            print(dialogue['debug.attack'] % (total_damage, attack_enemy_name, attack_enemy_health))
+            print(dialogue['attack.damage'] % (attack_enemy_name, total_damage))
             if attack_enemy_health <= 0:  # remove Enemy
                 print(dialogue['attack.kill'] % attack_enemy_name)
                 end_game = False
@@ -694,11 +696,11 @@ def attack(weapon_input=''):
                 if end_game:
                     end_credits()
             else:
-                print(dialogue['debug.enemyAttack'] % (attack_enemy_name, attack_enemy_strength))
                 if not debug_immortal:
-                    char_health -= (attack_enemy_strength-(attack_enemy_strength*char_defense))
-                    print(dialogue['debug.health'] % char_health)
-                    if char_health <= 0:
+                    damage = attack_enemy_strength-(attack_enemy_strength*char_defense)
+                    char_health -= damage
+                    print(dialogue['attack.counter'] % (attack_enemy_name, damage))
+                    if char_health <= 0:  # Player Died
                         print(dialogue['attack.death'])  # Player dies
                         save_file_to_remove = os.path.join(save_file_name, "main.txt")
                         os.remove(save_file_to_remove)  # delete save file
