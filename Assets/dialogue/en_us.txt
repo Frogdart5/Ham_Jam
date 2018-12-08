@@ -21,7 +21,7 @@ attack.invalidWeapon:You can't attack with that
 attack.hand:Hand
 attack.kill:%s was killed
 attack.death:You have died
-attack.weaponBroke:The %s broke
+attack.weaponBroke:Your %s broke
 attack.notItem:that weapon doesn't exist
 attack.damage:%s took %d damage
 attack.counter:%s attacked. You took %d damage
