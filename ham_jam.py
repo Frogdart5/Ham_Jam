@@ -200,7 +200,7 @@ def create_save(save="save1"):
     world_enemies = dict()
     world_items = dict()
     char_equip = str()
-    char_inventory = {'item.axe': [2, 3]}  # internal item name, quantity
+    char_inventory = {'item.axe': [2, 6]}  # internal item name, quantity
     char_health = 20  # TODO Resotre normal durability
     char_defense = 0.0
     boss_spawned = False
@@ -325,7 +325,7 @@ def load_room(x, y):
         entity_uuid = rooms[x][y][1]
         if rooms[x][y][0] == 2:
             load_enemy_name = dialogue[world_enemies[entity_uuid][0]]  # Gets name of entity
-            load_enemy_health = world_enemies[entity_uuid][2]
+            load_enemy_health = world_enemies[entity_uuid][1]
             lock_doors = True  # keep player in room until enemy defeated
             print(dialogue['walk.occupiedEnemy'] % (load_enemy_name, load_enemy_health))
     else:
@@ -676,11 +676,11 @@ def attack(weapon_input=''):
             attack_enemy_health -= (weapon_strength*attack_multiplier)  # attacks enemy
             if weapon != "attack.hand":
                 char_inventory[weapon][1] -= 1
-                if char_inventory[weapon][1] <= 0:  # no durability left
+                if char_inventory[weapon][1] <= 0:  # no durability left, weapon broke
                     char_inventory[weapon][0] -= 1
+                    print(dialogue['attack.weaponBroke'] % dialogue[weapon])  # tell player weaopn broke
                     char_inventory[weapon][1] = weapon_durability[weapon]
-                    if char_inventory[weapon][0] <= 0:
-                        print(dialogue['attack.weaponBroke'] % dialogue[weapon])
+                    if char_inventory[weapon][0] <= 0:  # quantity of weapon reaches zero, remove from inentory
                         char_inventory.pop(weapon)
             world_enemies[enemy_uuid][1] = attack_enemy_health  # stores enemy health in proper location
             total_damage = (weapon_strength*attack_multiplier)
