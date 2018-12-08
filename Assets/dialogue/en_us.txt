@@ -1,7 +1,7 @@
-menu.selections:1)Start 2)Options 3)Exit
+menu.selections:-)Start -)Options -)Exit
 menu.start:Start Game (Y/N)
 menu.exit:Are you sure you want to quit (Y/N)
-menu.options:Options 1)Reset 2)Back
+menu.options:Options -)Reset -)Back
 menu.resetConfirm:Are you sure you want to delete all save files? (Y/N)
 menu.loadFailed:Failed to load save file. Returning to menu
 menu.resetDeleted:Saves Deleted
@@ -36,7 +36,7 @@ walk.unavailable:You Can't go that way
 walk.empty:You find yourself in an empty room
 walk.occupiedEnemy:A(n) %s(%d HP) appeared
 walk.occupiedItem:There is a(n) %s sitting in the room
-walk.locked:the door is shut, you cannot leave
+walk.locked:the door is shut by a magical power, you cannot leave until you kill the enemy
 inventory.title:Inventory
 inventory.equipped:Equipped
 inventory.weaponExtended:Strength: %d Type: %s
