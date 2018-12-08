@@ -89,6 +89,7 @@ equip.noArgs:What do you want to equip?
 equip.alreadyWorn:You're already wearing that
 equip.notArmor:You can't wear that
 equip.success:Armor Equipped
+equip.nonExistent:That item doesn't exist
 help.0:Walk (direction) - Walk North, South, East, or West
 help.1:Attack (weapon) - attacks an enemy
 help.2:Pickup/Take/Collect (item) - picks up item in room

@@ -553,7 +553,7 @@ def equip(armor_input=''):
         elif armor_input == '':  # no item given
             print(dialogue['equip.noArgs'])
     else:
-        print("nonexistent")
+        print(dialogue['equip.nonexistent'])
     return
 
 
